@@ -72,6 +72,32 @@ static const struct light_map_gpio g_gpio_maps[] = {
     {"Generator B", SDVX_IO_OUT_GPIO_GENERATOR_B},
 };
 
+// due to a quirk of the IO, wing L/R cannot be set independently.
+// only assign one of the Left/Right to the up/low LEDs otherwise brightness can be weird.
+// you can assign up to 3 pins per LED, just end the list with -1. e.g. {0, 1, 2, -1}.
+// I wouldn't recommend this due to the above.
+// refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
+// PINS:
+//  0: Wing Left Up R
+//  1: Wing Left Up G
+//  2: Wing Left Up B
+//  3: Wing Right Up R
+//  4: Wing Right Up G
+//  5: Wing Right Up B
+//  6: Wing Left Low R
+//  7: Wing Left Low G
+//  8: Wing Left Low B
+//  9: Wing Right Low R
+// 10: Wing Right Low G
+// 11: Wing Right Low B
+// 12: Woofer R
+// 13: Woofer G
+// 14: Woofer B
+// 15: Controller R
+// 16: Controller G
+// 17: Controller B
+// 18: Generator R
+// 19: Generator G
 static const struct light_map_rgb g_rgb_maps[] = {
     {"Left Wing Avg R", {6, -1}},
     {"Left Wing Avg G", {7, -1}},

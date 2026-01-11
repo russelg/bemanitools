@@ -1,3 +1,7 @@
+# spice-sdvxio
+
+[Read documentation here](doc/sdvxhook/spice-sdvxio.md)
+
 # Bemanitools 5
 
 Version: `5.49`

@@ -99,12 +99,12 @@ static const struct light_map_gpio g_gpio_maps[] = {
 // 18: Generator R
 // 19: Generator G
 static const struct light_map_rgb g_rgb_maps[] = {
-    {"Left Wing Avg R", {6, -1}},
-    {"Left Wing Avg G", {7, -1}},
-    {"Left Wing Avg B", {8, -1}},
-    {"V Unit Avg R", {0, /*9,*/ -1}}, // Maps to both Left Low and Right Low
-    {"V Unit Avg G", {1, /*10,*/ -1}},
-    {"V Unit Avg B", {2, /*11,*/ -1}},
+    {"Left Wing Avg R", {0, -1}},
+    {"Left Wing Avg G", {1, -1}},
+    {"Left Wing Avg B", {2, -1}},
+    {"V Unit Avg R", {6, /*9,*/ -1}},
+    {"V Unit Avg G", {7, /*10,*/ -1}},
+    {"V Unit Avg B", {8, /*11,*/ -1}},
     {"Woofer Avg R", {12, -1}},
     {"Woofer Avg G", {13, -1}},
     {"Woofer Avg B", {14, -1}},

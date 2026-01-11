@@ -200,6 +200,7 @@ include src/main/security/Module.mk
 include src/main/unicorntail/Module.mk
 include src/main/util/Module.mk
 include src/main/vefxio/Module.mk
+include src/main/spice-sdvxio/Module.mk
 include src/main/vigem-iidxio/Module.mk
 include src/main/vigem-sdvxio/Module.mk
 include src/main/vigem-ddrio/Module.mk
@@ -635,6 +636,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
+		build/bin/indep-32/spice-sdvxio.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -645,6 +647,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
+		build/bin/indep-64/spice-sdvxio.exe \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

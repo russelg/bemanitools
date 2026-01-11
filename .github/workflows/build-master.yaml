@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - spice-sdvxio
 
 jobs:
   build:

@@ -411,6 +411,49 @@ void handle_lights(struct spice_connection *connection, uint16_t *gpio_lights)
         spice_lights_free(light_states, light_count);
     }
 }
+
+void handle_coins(struct spice_connection *connection)
+{
+    static bool initialized = false;
+
+    if (!initialized) {
+        initialized = true;
+        log_info("unlocking coin mech");
+
+        // enable coins
+        sdvx_io_set_coin_blocker(false);
+    }
+
+    // get coinstock
+    static int coinstock_last = 0;
+    int coinstock = sdvx_io_get_coins();
+
+    // update coinstock
+    if (coinstock != coinstock_last) {
+        coinstock_last = coinstock;
+        log_info("coins set to %d", coinstock);
+        spice_coin_set(connection, coinstock);
+    }
+
+    static uint64_t time_last = 0;
+    if (GetTickCount64() >= time_last + 500) {
+        time_last = GetTickCount64();
+
+        // get new state
+        bool closed;
+        static bool last_state = false;
+        if (spice_coin_blocker_get(connection, &closed)) {
+            // check for change
+            if (last_state != closed) {
+                last_state = closed;
+
+                // update coin blocker
+                sdvx_io_set_coin_blocker(closed);
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     log_to_writer(log_writer_stdout, NULL);
@@ -502,9 +545,16 @@ int main(int argc, char **argv)
         // read lights
         handle_lights(connection, &gpio_lights);
 
+        // write lights to GPIO (staging)
         sdvx_io_set_gpio_lights(gpio_lights);
+
+        // handle coins
+        handle_coins(connection);
+
+        // flush output to IO
         sdvx_io_write_output();
 
+        // exit loop if TEST+SERVICE is pressed
         if (check_key(sys, SDVX_IO_IN_GPIO_SYS_TEST) &&
             check_key(sys, SDVX_IO_IN_GPIO_SYS_SERVICE)) {
             loop = false;

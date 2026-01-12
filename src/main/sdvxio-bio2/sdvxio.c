@@ -30,11 +30,15 @@ static uint16_t sdvx_io_gpio[2];
 static uint8_t sdvx_io_gpio_sys;
 static uint16_t sdvx_io_analog[2];
 
+static bool coin_blocked;
+static uint8_t sdvx_io_coins;
+
 static char autodetect_buffer[512];
 
 static atomic_bool running;
 static atomic_bool processing_io;
 static int16_t bio2_node_id;
+
 
 uint8_t wing_staging[12];
 struct bi2a_sdvx_state_out pout_staging;
@@ -283,6 +287,8 @@ bool sdvx_io_read_input(void)
     sdvx_io_analog[0] = pin.analogs[0].a_val;
     sdvx_io_analog[1] = pin.analogs[1].a_val;
 
+    sdvx_io_coins = pin.coins;
+
     sdvx_io_gpio_sys = 0;
     sdvx_io_gpio_sys |=
         shift_pin(pin.analogs[0].a_coin, SDVX_IO_IN_GPIO_SYS_COIN);
@@ -342,6 +348,25 @@ bool sdvx_io_set_amp_volume(
     if (!bio2drv_bi2a_sdvx_amp(
             bio2_device_ctx, bio2_node_id, 0, 0, primary, primary)) {
         return false;
+    }
+
+    return true;
+}
+
+uint8_t sdvx_io_get_coins(void)
+{
+    return sdvx_io_coins;
+}
+
+bool sdvx_io_set_coin_blocker(bool blocked)
+{
+    coin_blocked = blocked;
+
+    pout_staging.c_block = 0;
+    if (blocked) {
+        pout_staging.c_block &= ~0x80u;
+    } else {
+        pout_staging.c_block |= 0x80u;
     }
 
     return true;

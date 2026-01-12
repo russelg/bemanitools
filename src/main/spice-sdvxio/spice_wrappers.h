@@ -34,6 +34,8 @@ uint64_t spice_msg_gen_id();
 
 bool spice_analogs_write(struct spice_connection *con, struct spice_analog_state *states, size_t count);
 bool spice_buttons_write(struct spice_connection *con, struct spice_button_state *states, size_t count);
+bool spice_coin_set(struct spice_connection *con, int coins);
+bool spice_coin_blocker_get(struct spice_connection *con, bool *closed);
 bool spice_lights_read(struct spice_connection *con, struct spice_light_state **states, size_t *count);
 void spice_lights_free(struct spice_light_state *states, size_t count);
 

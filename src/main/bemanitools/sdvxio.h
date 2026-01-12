@@ -105,4 +105,11 @@ uint16_t sdvx_io_get_spinner_pos(uint8_t spinner_no);
 bool sdvx_io_set_amp_volume(
     uint8_t primary, uint8_t headphone, uint8_t subwoofer);
 
+/* Open or close the coin chute - true will redirect all coins to the return
+   slot. */
+
+bool sdvx_io_set_coin_blocker(bool blocked);
+
+uint8_t sdvx_io_get_coins(void);
+
 #endif

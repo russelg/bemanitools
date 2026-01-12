@@ -12,3 +12,5 @@ EXPORTS
     sdvx_io_set_pwm_light
     sdvx_io_write_output
     sdvx_io_set_amp_volume
+    sdvx_io_get_coins
+    sdvx_io_set_coin_blocker

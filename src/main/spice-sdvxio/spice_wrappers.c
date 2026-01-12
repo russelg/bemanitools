@@ -123,6 +123,59 @@ bool spice_buttons_write(struct spice_connection *con, struct spice_button_state
     return true;
 }
 
+bool spice_coin_set(struct spice_connection *con, int coins)
+{
+    cJSON *req = spice_request_gen("coin", "set");
+    cJSON *params = cJSON_GetObjectItemCaseSensitive(req, "params");
+
+    cJSON *amount = cJSON_CreateNumber(coins);
+    cJSON_AddItemToArray(params, amount);
+
+    char *req_str = spice_doc2str(req);
+    cJSON_Delete(req);
+
+    cJSON *res = spice_response_get(spice_connection_request(con, req_str));
+    free(req_str);
+
+    if (!res) {
+        return false;
+    }
+
+    cJSON_Delete(res);
+    return true;
+}
+
+bool spice_coin_blocker_get(struct spice_connection *con, bool *closed)
+{
+    cJSON *req = spice_request_gen("coin", "blocker_get");
+    char *req_str = spice_doc2str(req);
+    cJSON_Delete(req);
+
+    cJSON *res = spice_response_get(spice_connection_request(con, req_str));
+    free(req_str);
+
+    if (!res) {
+        return false;
+    }
+
+    cJSON *array = cJSON_GetObjectItemCaseSensitive(res, "data");
+    if (!cJSON_IsArray(array)) {
+        cJSON_Delete(res);
+        return false;
+    }
+
+    cJSON *item = cJSON_GetArrayItem(array, 0);
+    if (!item) {
+        cJSON_Delete(res);
+        return false;
+    }
+
+    *closed = cJSON_IsTrue(item);
+
+    cJSON_Delete(res);
+    return true;
+}
+
 bool spice_lights_read(struct spice_connection *con, struct spice_light_state **states, size_t *count)
 {
     cJSON *req = spice_request_gen("lights", "read");

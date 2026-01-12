@@ -268,3 +268,13 @@ bool sdvx_io_set_amp_volume(
 
     return true;
 }
+
+uint8_t sdvx_io_get_coins(void)
+{
+    return 0;
+}
+
+bool sdvx_io_set_coin_blocker(bool blocked)
+{
+    return true;
+}

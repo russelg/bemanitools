@@ -155,6 +155,8 @@ uint8_t rescale_light_value(float value)
     return (uint8_t) (((value - 0.03f) / (1.0f - 0.03f)) * 255.f);
 }
 
+static uint64_t g_service_override_timeout = 0;
+
 void handle_buttons(
     struct spice_connection *connection,
     uint8_t sys,
@@ -182,6 +184,12 @@ void handle_buttons(
         button_states[i].name = (char *) g_button_maps[i].name;
         button_states[i].value =
             check_key(current_gpio, g_button_maps[i].bitmask) ? 1.0f : 0.0f;
+
+        // handle service being pressed for coins
+        if (!strcmp(button_states[i].name, "Service") &&
+            GetTickCount64() < g_service_override_timeout) {
+            button_states[i].value = 1.0f;
+        }
     }
 
     spice_buttons_write(connection, button_states, num_buttons);
@@ -255,7 +263,7 @@ void handle_lights(struct spice_connection *connection, uint16_t *gpio_lights)
     }
 }
 
-void handle_coins(struct spice_connection *connection)
+void handle_coins(struct spice_connection *connection, bool use_service_button)
 {
     static bool initialized = false;
 
@@ -275,7 +283,14 @@ void handle_coins(struct spice_connection *connection)
     if (coinstock != coinstock_last) {
         coinstock_last = coinstock;
         log_info("coins set to %d", coinstock);
+
+        if (use_service_button) {
+            log_info("adding coin by pressing the service button");
+            g_service_override_timeout = GetTickCount64() + 500;
+        } else {
+            log_info("setting coins to %d via spice_coin_set", coinstock);
         spice_coin_set(connection, coinstock);
+    }
     }
 
     static uint64_t time_last = 0;
@@ -373,6 +388,9 @@ int main(int argc, char **argv)
         gpio0 = sdvx_io_get_input_gpio(0);
         gpio1 = sdvx_io_get_input_gpio(1);
 
+        // handle coins
+        handle_coins(connection, config.service_coin);
+
         // write buttons
         handle_buttons(connection, sys, gpio0, gpio1);
 
@@ -390,9 +408,6 @@ int main(int argc, char **argv)
 
         // write lights to GPIO (staging)
         sdvx_io_set_gpio_lights(gpio_lights);
-
-        // handle coins
-        handle_coins(connection);
 
         // flush output to IO
         sdvx_io_write_output();

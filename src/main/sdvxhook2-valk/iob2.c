@@ -31,6 +31,7 @@
 // we never instanciated IIDXIO ourselves, we assume that the original iidxhook9
 // does so
 #include "bemanitools/sdvxio.h"
+#include "bio2/bi2a-sdvx.h"
 
 #define MAX_INSTANCES 1
 
@@ -107,7 +108,7 @@ static void my_IoReset(void *this, unsigned int state);
 static void my_ControlCoinBlocker(void *this, int side_0, char state);
 static void my_AddCounter(void *this, int side_0, char count);
 static void my_SetIccrLed(void *this, unsigned int rgb);
-static void my_SetPlayerButtonLamp(void *this, int sw_num, char state);
+static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state);
 
 static void my_SetTapeLedData(void *this, unsigned int state, const void *data);
 
@@ -294,9 +295,7 @@ _Static_assert(
 static uint8_t counter;
 static void my_GetDeviceStatus(void *this, struct dev_status *status)
 {
-
-    sdvx_io_set_gpio_lights(0);
-
+    // TODO: tapeled
     sdvx_io_set_pwm_light(0x0, 0);
     sdvx_io_set_pwm_light(0x1, 0);
     sdvx_io_set_pwm_light(0x2, 0);
@@ -385,14 +384,45 @@ static void my_SetIccrLed(void *this, unsigned int rgb)
 {
     // nothing
 }
-static void my_SetPlayerButtonLamp(void *this, int sw_num, char state)
+static uint32_t sdvx_gpio_lights = 0;
+static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state)
 {
-    // nothing
+    /**
+     * sw_num
+     * 0: START, 1: BT_A, 2: BT_B, 3: BT_C, 4: BT_D, 5: FX_L, 6: FX_R
+     *
+     * state
+     * 0: ON, 1: OFF
+     */
+
+    static const uint8_t sw_num_to_gpio[] = {
+        SDVX_IO_OUT_GPIO_START,
+        SDVX_IO_OUT_GPIO_A,
+        SDVX_IO_OUT_GPIO_B,
+        SDVX_IO_OUT_GPIO_C,
+        SDVX_IO_OUT_GPIO_D,
+        SDVX_IO_OUT_GPIO_FX_L,
+        SDVX_IO_OUT_GPIO_FX_R,
+    };
+
+    if (sw_num < 0 || sw_num >= lengthof(sw_num_to_gpio)) {
+        return;
+    }
+
+    if (state == 0) {
+        sdvx_gpio_lights |= (1 << sw_num_to_gpio[sw_num]);
+    } else {
+        sdvx_gpio_lights &= ~(1 << sw_num_to_gpio[sw_num]);
+    }
+
+    sdvx_io_set_gpio_lights(sdvx_gpio_lights);
+
+    // TODO: should sdvx_io_write_output() get called here?
 }
 
 static void my_SetTapeLedData(void *this, unsigned int state, const void *data)
 {
-    // nothing
+    // TODO
 }
 
 // libaio-iob

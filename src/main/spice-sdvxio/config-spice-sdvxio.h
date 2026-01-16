@@ -12,6 +12,8 @@ struct spice_sdvxio_config {
     char host[256];
     int32_t port;
     char password[256];
+    bool analog_enable_sleep;
+    float analog_snap_multiplier;
 };
 
 bool get_spice_sdvxio_config(struct spice_sdvxio_config *config_out);

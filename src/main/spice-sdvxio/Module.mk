@@ -19,3 +19,4 @@ src_spice-sdvxio      := \
     spice_rc4.c \
     spice_connection.c \
     spice_wrappers.c \
+    responsive-analog-read.c \

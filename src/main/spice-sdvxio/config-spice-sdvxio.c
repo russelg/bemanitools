@@ -11,15 +11,17 @@
 #define SPICE_SDVXIO_CONFIG_HOST_KEY "spice.host"
 #define SPICE_SDVXIO_CONFIG_PORT_KEY "spice.port"
 #define SPICE_SDVXIO_CONFIG_PASSWORD_KEY "spice.password"
+#define SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY "sdvxio.analog_enable_sleep"
+#define SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY \
+    "sdvxio.analog_snap_multiplier"
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE true
-#define SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE false
-#define SPICE_SDVXIO_CONFIG_DEFAULT_RELATIVE_ANALOG_VALUE false
-#define SPICE_SDVXIO_CONFIG_DEFAULT_PWM_WINGS_VALUE 128
-#define SPICE_SDVXIO_CONFIG_DEFAULT_PWM_CONTROLLER_VALUE 64
 #define SPICE_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE 48
+#define SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE false
 #define SPICE_SDVXIO_CONFIG_DEFAULT_HOST_VALUE "localhost"
 #define SPICE_SDVXIO_CONFIG_DEFAULT_PORT_VALUE 1337
 #define SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE "password"
+#define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE true
+#define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE 0.1f
 
 static void spice_sdvxio_config_init(struct cconfig *config)
 {
@@ -58,6 +60,23 @@ static void spice_sdvxio_config_init(struct cconfig *config)
         SPICE_SDVXIO_CONFIG_PASSWORD_KEY,
         SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE,
         "Password of spice server");
+
+    cconfig_util_set_bool(
+        config,
+        SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY,
+        SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE,
+        "Enabling sleep will cause values to take less time to stop changing "
+        "and potentially stop changing more abruptly, where as disabling sleep "
+        "will cause values to ease into their correct position smoothly");
+
+    cconfig_util_set_float(
+        config,
+        SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY,
+        SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE,
+        "Controls the amount of easing (0.0-1.0). Increase this to lessen the "
+        "amount of easing (such as 0.1) and make the responsive values more "
+        "responsive, but doing so may cause more noise to seep through if "
+        "sleep is not enabled");
 }
 
 static void spice_sdvxio_config_get(
@@ -135,6 +154,30 @@ static void spice_sdvxio_config_get(
             "to default '%s'",
             SPICE_SDVXIO_CONFIG_PASSWORD_KEY,
             SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE);
+    }
+
+    if (!cconfig_util_get_bool(
+            config,
+            SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY,
+            &spice_config->analog_enable_sleep,
+            SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY,
+            SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE);
+    }
+
+    if (!cconfig_util_get_float(
+            config,
+            SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY,
+            &spice_config->analog_snap_multiplier,
+            SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%f'",
+            SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY,
+            SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE);
     }
 }
 

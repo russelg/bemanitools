@@ -10,6 +10,7 @@
 #include "util/thread.h"
 
 #include "spice-sdvxio/config-spice-sdvxio.h"
+#include "spice-sdvxio/responsive-analog-read.h"
 #include "spice-sdvxio/spice_wrappers.h"
 
 #define ANALOG_FIXED_SENSITIVITY 1023.f
@@ -30,6 +31,7 @@ struct analog_map {
     const char *name;
     uint8_t spinner_idx;
     float sensitivity;
+    struct responsive_analog_read rar;
 };
 
 static const struct button_map g_button_maps[] = {
@@ -46,9 +48,9 @@ static const struct button_map g_button_maps[] = {
     {"Headphone", GPIO_TYPE_0, SDVX_IO_IN_GPIO_0_HEADPHONE},
 };
 
-static const struct analog_map g_analog_maps[] = {
-    {"VOL-L", 0, ANALOG_FIXED_SENSITIVITY},
-    {"VOL-R", 1, ANALOG_FIXED_SENSITIVITY},
+static struct analog_map g_analog_maps[] = {
+    {"VOL-L", 0, ANALOG_FIXED_SENSITIVITY, {0}},
+    {"VOL-R", 1, ANALOG_FIXED_SENSITIVITY, {0}},
 };
 
 struct light_map_gpio {
@@ -73,11 +75,10 @@ static const struct light_map_gpio g_gpio_maps[] = {
 };
 
 // due to a quirk of the IO, wing L/R cannot be set independently.
-// only assign one of the Left/Right to the up/low LEDs otherwise brightness can be weird.
-// you can assign up to 3 pins per LED, just end the list with -1. e.g. {0, 1, 2, -1}.
-// I wouldn't recommend this due to the above.
-// refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
-// PINS:
+// only assign one of the Left/Right to the up/low LEDs otherwise brightness can
+// be weird. you can assign up to 3 pins per LED, just end the list with -1.
+// e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above. refer to
+// src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output PINS:
 //  0: Wing Left Up R
 //  1: Wing Left Up G
 //  2: Wing Left Up B
@@ -202,9 +203,13 @@ void handle_analogs(struct spice_connection *connection)
     struct spice_analog_state *analog_states =
         calloc(num_analogs, sizeof(struct spice_analog_state));
     for (size_t i = 0; i < num_analogs; i++) {
+        responsive_analog_read_update(
+            &g_analog_maps[i].rar,
+            sdvx_io_get_spinner_pos(g_analog_maps[i].spinner_idx));
+
         analog_states[i].name = (char *) g_analog_maps[i].name;
         analog_states[i].value =
-            sdvx_io_get_spinner_pos(g_analog_maps[i].spinner_idx) /
+            responsive_analog_read_get_value(&g_analog_maps[i].rar) /
             g_analog_maps[i].sensitivity;
     }
 
@@ -289,8 +294,8 @@ void handle_coins(struct spice_connection *connection, bool use_service_button)
             g_service_override_timeout = GetTickCount64() + 500;
         } else {
             log_info("setting coins to %d via spice_coin_set", coinstock);
-        spice_coin_set(connection, coinstock);
-    }
+            spice_coin_set(connection, coinstock);
+        }
     }
 
     static uint64_t time_last = 0;
@@ -362,6 +367,14 @@ int main(int argc, char **argv)
     uint8_t sys;
     uint16_t gpio0;
     uint16_t gpio1;
+
+    for (size_t i = 0; i < sizeof(g_analog_maps) / sizeof(g_analog_maps[0]);
+         i++) {
+        responsive_analog_read_init(
+            &g_analog_maps[i].rar,
+            config.analog_enable_sleep,
+            config.analog_snap_multiplier);
+    }
 
     log_info("spice init succeeded, beginning poll loop");
 

@@ -245,15 +245,6 @@ static uint8_t check_pin(uint16_t value, uint8_t pin)
     return (value >> pin) & 1;
 }
 
-static uint32_t assign_pin(uint32_t shift, uint32_t value)
-{
-    if (!value) {
-        return 0;
-    } else {
-        return 1 << shift;
-    }
-}
-
 #pragma pack(push, 1)
 struct sys_input {
     uint8_t dev_io_counter;
@@ -272,7 +263,16 @@ struct sys_input {
 struct game_input {
     uint16_t analog_left;
     uint16_t analog_right;
-    uint8_t buttons;
+    struct {
+        bool b_start : 1;
+        bool b_a : 1;
+        bool b_b : 1;
+        bool b_c : 1;
+        bool b_d : 1;
+        bool b_fx_l : 1;
+        bool b_fx_r : 1;
+        uint8_t padding : 1;
+    } buttons;
 };
 
 struct dev_status {
@@ -348,23 +348,19 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     uint16_t analog_left = sdvx_io_get_spinner_pos(0) << 6;
     uint16_t analog_right = sdvx_io_get_spinner_pos(1) << 6;
 
-    uint8_t buttons = 0;
-
-    buttons |= assign_pin(0, check_pin(gpio0, SDVX_IO_IN_GPIO_0_START));
-    buttons |= assign_pin(1, check_pin(gpio0, SDVX_IO_IN_GPIO_0_A));
-    buttons |= assign_pin(2, check_pin(gpio0, SDVX_IO_IN_GPIO_0_B));
-    buttons |= assign_pin(3, check_pin(gpio0, SDVX_IO_IN_GPIO_0_C));
-    buttons |= assign_pin(4, check_pin(gpio1, SDVX_IO_IN_GPIO_1_D));
-    buttons |= assign_pin(5, check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L));
-    buttons |= assign_pin(6, check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R));
-
     // tl;dr game uses the past 16 "polls" of input and uses counter2 as a
     // tracker
     for (size_t i = 0; i < 16; ++i) {
         status->game_input[i].analog_left = analog_left;
         status->game_input[i].analog_right = analog_right;
 
-        status->game_input[i].buttons = buttons;
+        status->game_input[i].buttons.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
+        status->game_input[i].buttons.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
+        status->game_input[i].buttons.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
+        status->game_input[i].buttons.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
+        status->game_input[i].buttons.b_d = check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
+        status->game_input[i].buttons.b_fx_l = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
+        status->game_input[i].buttons.b_fx_r = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
     }
 }
 

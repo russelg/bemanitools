@@ -254,20 +254,42 @@ static uint32_t assign_pin(uint32_t shift, uint32_t value)
     }
 }
 
-struct some_buffer {
-    uint16_t vol_l;
-    uint16_t vol_r;
-    uint16_t buttons;
+#pragma pack(push, 1)
+struct sys_input {
+    uint8_t dev_io_counter;
+    uint8_t b_ex_io_a_err;
+    uint8_t b_ex_io_b_err;
+    uint8_t b_pc_power_on;
+    uint8_t b_pc_power_check;
+    uint8_t coin_count;
+    uint8_t b_test;
+    uint8_t b_service;
+    uint8_t b_coin_sw;
+    uint8_t b_coin_jam;
+    uint8_t b_hp_detect;
+};
+
+struct dev_poll {
+    uint16_t analog_left;
+    uint16_t analog_right;
+    uint8_t buttons;
 };
 
 struct dev_status {
-    uint8_t counter1[4];
-    uint8_t unk1[8];
-    uint8_t counter2[4];
-    char buf2[290];
-    struct some_buffer buf3[16];
-    char buf4[12];
+    uint8_t input_counter;
+    uint8_t output_counter;
+    uint8_t io_reset_counter;
+    uint8_t tape_led_counter;
+    uint8_t tape_led_rate[8];
+    struct sys_input input;
+    uint8_t unk_1[289];
+    struct dev_poll polls[16];
+    uint8_t unk_2[22];
 };
+#pragma pack(pop)
+
+_Static_assert(
+    sizeof(struct dev_status) == 414, "dev_status is the wrong size");
 
 static uint8_t counter;
 static void my_GetDeviceStatus(void *this, struct dev_status *status)
@@ -308,31 +330,25 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     uint16_t gpio0 = sdvx_io_get_input_gpio(0);
     uint16_t gpio1 = sdvx_io_get_input_gpio(1);
 
-    status->counter1[0] = counter;
-    status->counter2[0] = counter;
+    status->input_counter = counter;
+    status->input.dev_io_counter = counter;
     counter++;
 
-    status->buf2[2] = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
-    status->buf2[3] = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
-    // status->buf2[4] = 0; // coin mech
-    // status->buf2[5] = 0; // ???
+    status->input.b_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
+    status->input.b_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
+    status->input.b_coin_sw = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+    status->input.coin_count += sdvx_io_get_coins();
 
     if (force_headphones) {
-        status->buf2[6] = 1;
+        status->input.b_hp_detect = 1;
     } else {
-        status->buf2[6] = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+        status->input.b_hp_detect = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
     }
 
-    // status->buf2[7] = 0; // record
+    uint16_t analog_left = sdvx_io_get_spinner_pos(0) << 6;
+    uint16_t analog_right = sdvx_io_get_spinner_pos(1) << 6;
 
-    // headphone?
-    // pin->buttons_1.b_headphone = check_pin(gpio0,
-    // SDVX_IO_IN_GPIO_0_HEADPHONE);
-
-    uint16_t vol_l = sdvx_io_get_spinner_pos(0) << 6;
-    uint16_t vol_r = sdvx_io_get_spinner_pos(1) << 6;
-
-    uint16_t buttons = 0;
+    uint8_t buttons = 0;
 
     buttons |= assign_pin(0, check_pin(gpio0, SDVX_IO_IN_GPIO_0_START));
     buttons |= assign_pin(1, check_pin(gpio0, SDVX_IO_IN_GPIO_0_A));
@@ -345,10 +361,10 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     // tl;dr game uses the past 16 "polls" of input and uses counter2 as a
     // tracker
     for (size_t i = 0; i < 16; ++i) {
-        status->buf3[i].vol_l = vol_l;
-        status->buf3[i].vol_r = vol_r;
+        status->polls[i].analog_left = analog_left;
+        status->polls[i].analog_right = analog_right;
 
-        status->buf3[i].buttons = buttons;
+        status->polls[i].buttons = buttons;
     }
 }
 
@@ -363,7 +379,7 @@ static void my_IoReset(void *this, unsigned int state)
 
 static void my_ControlCoinBlocker(void *this, int side_0, char state)
 {
-    // nothing
+    sdvx_io_set_coin_blocker(state);
 }
 static void my_AddCounter(void *this, int side_0, char count)
 {

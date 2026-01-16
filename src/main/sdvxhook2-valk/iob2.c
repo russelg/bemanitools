@@ -22,6 +22,7 @@
 #include "util/defs.h"
 #include "util/log.h"
 #include "util/str.h"
+#include "util/thread.h"
 #include "util/time.h"
 
 // technically not needed, but I'd like the logs to show up
@@ -213,6 +214,7 @@ static struct AIO_NODE *assigned_node;
 static struct AIO_WRFIRM *assigned_fw_obj;
 
 static bool poll_delay;
+static bool force_headphones;
 
 // libaio-iob2_video
 
@@ -297,6 +299,10 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
 
     sdvx_io_write_output();
 
+    if (poll_delay) {
+        Sleep(1);
+    }
+
     sdvx_io_read_input();
     uint8_t sys = sdvx_io_get_input_gpio_sys();
     uint16_t gpio0 = sdvx_io_get_input_gpio(0);
@@ -310,7 +316,13 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     status->buf2[3] = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
     // status->buf2[4] = 0; // coin mech
     // status->buf2[5] = 0; // ???
-    status->buf2[6] = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+
+    if (force_headphones) {
+        status->buf2[6] = 1;
+    } else {
+        status->buf2[6] = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+    }
+
     // status->buf2[7] = 0; // record
 
     // headphone?
@@ -491,11 +503,17 @@ static unsigned int my_aioNodeMgr_Destroy(struct AIO_NMGR *mgr)
     return real_aioNodeMgr_Destroy(mgr);
 }
 
-void aio_iob2_hook_init(bool disable_poll_limiter)
+void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val)
 {
     poll_delay = !disable_poll_limiter;
+    force_headphones = force_headphones_val;
+
     if (!poll_delay) {
         log_warning("aio_iob2_hook_init: poll_delay has been disabled");
+    }
+
+    if (force_headphones) {
+        log_info("aio_iob2_hook_init: force_headphones has been enabled");
     }
 
     // if (!sdvx_io_init(

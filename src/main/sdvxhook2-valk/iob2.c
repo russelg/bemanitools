@@ -269,7 +269,7 @@ struct sys_input {
     uint8_t b_hp_detect;
 };
 
-struct dev_poll {
+struct game_input {
     uint16_t analog_left;
     uint16_t analog_right;
     uint8_t buttons;
@@ -281,9 +281,9 @@ struct dev_status {
     uint8_t io_reset_counter;
     uint8_t tape_led_counter;
     uint8_t tape_led_rate[8];
-    struct sys_input input;
+    struct sys_input sys_input;
     uint8_t unk_1[289];
-    struct dev_poll polls[16];
+    struct game_input game_input[16];
     uint8_t unk_2[22];
 };
 #pragma pack(pop)
@@ -331,18 +331,18 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     uint16_t gpio1 = sdvx_io_get_input_gpio(1);
 
     status->input_counter = counter;
-    status->input.dev_io_counter = counter;
+    status->sys_input.dev_io_counter = counter;
     counter++;
 
-    status->input.b_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
-    status->input.b_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
-    status->input.b_coin_sw = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
-    status->input.coin_count += sdvx_io_get_coins();
+    status->sys_input.b_test = check_pin(sys, SDVX_IO_IN_GPIO_SYS_TEST);
+    status->sys_input.b_service = check_pin(sys, SDVX_IO_IN_GPIO_SYS_SERVICE);
+    status->sys_input.b_coin_sw = check_pin(sys, SDVX_IO_IN_GPIO_SYS_COIN);
+    status->sys_input.coin_count += sdvx_io_get_coins();
 
     if (force_headphones) {
-        status->input.b_hp_detect = 1;
+        status->sys_input.b_hp_detect = 1;
     } else {
-        status->input.b_hp_detect = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+        status->sys_input.b_hp_detect = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
     }
 
     uint16_t analog_left = sdvx_io_get_spinner_pos(0) << 6;
@@ -361,10 +361,10 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     // tl;dr game uses the past 16 "polls" of input and uses counter2 as a
     // tracker
     for (size_t i = 0; i < 16; ++i) {
-        status->polls[i].analog_left = analog_left;
-        status->polls[i].analog_right = analog_right;
+        status->game_input[i].analog_left = analog_left;
+        status->game_input[i].analog_right = analog_right;
 
-        status->polls[i].buttons = buttons;
+        status->game_input[i].buttons = buttons;
     }
 }
 

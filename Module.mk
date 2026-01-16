@@ -193,6 +193,7 @@ include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
+include src/main/sdvxhook2-valk/Module.mk
 include src/main/sdvxio-bio2/Module.mk
 include src/main/sdvxio-kfca/Module.mk
 include src/main/sdvxio/Module.mk
@@ -605,6 +606,7 @@ $(zipdir)/sdvx-01-to-04.zip: \
 $(zipdir)/sdvx-05-to-06.zip: \
 		build/bin/avs2_1700-64/launcher.exe \
 		build/bin/avs2_1700-64/sdvxhook2.dll \
+		build/bin/avs2_1700-64/sdvxhook2-valk.dll \
 		build/bin/indep-64/config.exe \
 		build/bin/indep-64/eamio.dll \
 		build/bin/indep-64/geninput.dll \

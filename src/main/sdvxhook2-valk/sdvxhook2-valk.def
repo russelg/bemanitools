@@ -1,0 +1,4 @@
+LIBRARY sdvxhook2-valk
+
+EXPORTS
+    DllMain@12 @1 NONAME

@@ -31,7 +31,8 @@
 // we never instanciated IIDXIO ourselves, we assume that the original iidxhook9
 // does so
 #include "bemanitools/sdvxio.h"
-#include "bio2/bi2a-sdvx.h"
+#include "sdvxhook2-valk/iob2.h"
+#include "sdvxhook2-valk/tapeled.h"
 
 #define MAX_INSTANCES 1
 
@@ -105,12 +106,12 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status);
 static void my_SetWatchDogTimer(void *this, char timer);
 static void my_IoReset(void *this, unsigned int state);
 
-static void my_ControlCoinBlocker(void *this, int side_0, char state);
+static void my_ControlCoinBlocker(void *this, uint64_t index, uint8_t state);
 static void my_AddCounter(void *this, int side_0, char count);
 static void my_SetIccrLed(void *this, unsigned int rgb);
 static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state);
 
-static void my_SetTapeLedData(void *this, unsigned int state, const void *data);
+static void my_SetTapeLedData(void *this, unsigned int index, const void *data);
 
 static const struct hook_symbol aio_iob2_syms[] = {
     {.name = "?AddCounter@AIO_IOB2_BI2X_UFC@@QEAAXII@Z",
@@ -293,32 +294,12 @@ _Static_assert(
     sizeof(struct dev_status) == 414, "dev_status is the wrong size");
 
 static uint8_t counter;
+static uint32_t sdvx_gpio_lights = 0;
 static void my_GetDeviceStatus(void *this, struct dev_status *status)
 {
-    // TODO: tapeled
-    sdvx_io_set_pwm_light(0x0, 0);
-    sdvx_io_set_pwm_light(0x1, 0);
-    sdvx_io_set_pwm_light(0x2, 0);
-    sdvx_io_set_pwm_light(0x3, 0);
-    sdvx_io_set_pwm_light(0x4, 0);
-    sdvx_io_set_pwm_light(0x5, 0);
-
-    sdvx_io_set_pwm_light(0x6, 0);
-    sdvx_io_set_pwm_light(0x7, 0);
-    sdvx_io_set_pwm_light(0x8, 0);
-    sdvx_io_set_pwm_light(0x9, 0);
-    sdvx_io_set_pwm_light(0xA, 0);
-    sdvx_io_set_pwm_light(0xB, 0);
-
-    sdvx_io_set_pwm_light(0xC, 0);
-    sdvx_io_set_pwm_light(0xD, 0);
-    sdvx_io_set_pwm_light(0xE, 0);
-
-    sdvx_io_set_pwm_light(0xF, 0);
-    sdvx_io_set_pwm_light(0x10, 0);
-    sdvx_io_set_pwm_light(0x11, 0);
-
+    // TODO: call sdvx_io_write_output here if needed
     sdvx_io_write_output();
+    sdvx_gpio_lights = 0;
 
     if (poll_delay) {
         Sleep(1);
@@ -341,7 +322,8 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
     if (force_headphones) {
         status->sys_input.b_hp_detect = 1;
     } else {
-        status->sys_input.b_hp_detect = check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
+        status->sys_input.b_hp_detect =
+            check_pin(gpio0, SDVX_IO_IN_GPIO_0_HEADPHONE);
     }
 
     uint16_t analog_left = sdvx_io_get_spinner_pos(0) << 6;
@@ -353,13 +335,20 @@ static void my_GetDeviceStatus(void *this, struct dev_status *status)
         status->game_input[i].analog_left = analog_left;
         status->game_input[i].analog_right = analog_right;
 
-        status->game_input[i].buttons.b_start = check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
-        status->game_input[i].buttons.b_a = check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
-        status->game_input[i].buttons.b_b = check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
-        status->game_input[i].buttons.b_c = check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
-        status->game_input[i].buttons.b_d = check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
-        status->game_input[i].buttons.b_fx_l = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
-        status->game_input[i].buttons.b_fx_r = check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
+        status->game_input[i].buttons.b_start =
+            check_pin(gpio0, SDVX_IO_IN_GPIO_0_START);
+        status->game_input[i].buttons.b_a =
+            check_pin(gpio0, SDVX_IO_IN_GPIO_0_A);
+        status->game_input[i].buttons.b_b =
+            check_pin(gpio0, SDVX_IO_IN_GPIO_0_B);
+        status->game_input[i].buttons.b_c =
+            check_pin(gpio0, SDVX_IO_IN_GPIO_0_C);
+        status->game_input[i].buttons.b_d =
+            check_pin(gpio1, SDVX_IO_IN_GPIO_1_D);
+        status->game_input[i].buttons.b_fx_l =
+            check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_L);
+        status->game_input[i].buttons.b_fx_r =
+            check_pin(gpio1, SDVX_IO_IN_GPIO_1_FX_R);
     }
 }
 
@@ -372,9 +361,10 @@ static void my_IoReset(void *this, unsigned int state)
     // nothing
 }
 
-static void my_ControlCoinBlocker(void *this, int side_0, char state)
+static void my_ControlCoinBlocker(void *this, uint64_t index, uint8_t state)
 {
-    sdvx_io_set_coin_blocker(state);
+    sdvx_io_set_coin_blocker(state == 0);
+    // sdvx_io_write_output();
 }
 static void my_AddCounter(void *this, int side_0, char count)
 {
@@ -384,7 +374,16 @@ static void my_SetIccrLed(void *this, unsigned int rgb)
 {
     // nothing
 }
-static uint32_t sdvx_gpio_lights = 0;
+
+uint16_t assign_gpio(bool active, size_t gpio_out)
+{
+    if (active) {
+        return 1 << gpio_out;
+    }
+
+    return 0;
+}
+
 static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state)
 {
     /**
@@ -409,7 +408,7 @@ static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state)
         return;
     }
 
-    if (state == 0) {
+    if (state != 0) {
         sdvx_gpio_lights |= (1 << sw_num_to_gpio[sw_num]);
     } else {
         sdvx_gpio_lights &= ~(1 << sw_num_to_gpio[sw_num]);
@@ -418,11 +417,189 @@ static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state)
     sdvx_io_set_gpio_lights(sdvx_gpio_lights);
 
     // TODO: should sdvx_io_write_output() get called here?
+    // sdvx_io_write_output();
 }
 
-static void my_SetTapeLedData(void *this, unsigned int state, const void *data)
+enum tape_led_light {
+    TITLE_AVG_R,
+    TITLE_AVG_G,
+    TITLE_AVG_B,
+    UPPER_LEFT_SPEAKER_AVG_R,
+    UPPER_LEFT_SPEAKER_AVG_G,
+    UPPER_LEFT_SPEAKER_AVG_B,
+    UPPER_RIGHT_SPEAKER_AVG_R,
+    UPPER_RIGHT_SPEAKER_AVG_G,
+    UPPER_RIGHT_SPEAKER_AVG_B,
+    LEFT_WING_AVG_R,
+    LEFT_WING_AVG_G,
+    LEFT_WING_AVG_B,
+    RIGHT_WING_AVG_R,
+    RIGHT_WING_AVG_G,
+    RIGHT_WING_AVG_B,
+    LOWER_LEFT_SPEAKER_AVG_R,
+    LOWER_LEFT_SPEAKER_AVG_G,
+    LOWER_LEFT_SPEAKER_AVG_B,
+    LOWER_RIGHT_SPEAKER_AVG_R,
+    LOWER_RIGHT_SPEAKER_AVG_G,
+    LOWER_RIGHT_SPEAKER_AVG_B,
+    CONTROL_PANEL_AVG_R,
+    CONTROL_PANEL_AVG_G,
+    CONTROL_PANEL_AVG_B,
+    WOOFER_AVG_R,
+    WOOFER_AVG_G,
+    WOOFER_AVG_B,
+    V_UNIT_AVG_R,
+    V_UNIT_AVG_G,
+    V_UNIT_AVG_B,
+};
+
+enum pwm_light {
+    TERMINATE = -1,
+    WING_LEFT_UP_R,
+    WING_LEFT_UP_G,
+    WING_LEFT_UP_B,
+    WING_RIGHT_UP_R,
+    WING_RIGHT_UP_G,
+    WING_RIGHT_UP_B,
+    WING_LEFT_LOW_R,
+    WING_LEFT_LOW_G,
+    WING_LEFT_LOW_B,
+    WING_RIGHT_LOW_R,
+    WING_RIGHT_LOW_G,
+    WING_RIGHT_LOW_B,
+    WOOFER_R,
+    WOOFER_G,
+    WOOFER_B,
+    CONTROLLER_R,
+    CONTROLLER_G,
+    CONTROLLER_B,
+    GENERATOR_R,
+    GENERATOR_G,
+};
+
+struct light_map_rgb {
+    int tape_led_light;
+    int pwm_channels[4];
+};
+
+// Due to a quirk of the IO, wing L/R cannot be set independently.
+// You should only assign one of the Left/Right to the up/low LEDs, otherwise
+// brightness can be weird. You can assign up to 3 pins per LED, just end the
+// list with -1. e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above
+// issue. refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
+static const struct light_map_rgb g_rgb_maps[] = {
+    {TITLE_AVG_R, {-1}},
+    {TITLE_AVG_G, {-1}},
+    {TITLE_AVG_B, {-1}},
+    {UPPER_LEFT_SPEAKER_AVG_R, {-1}},
+    {UPPER_LEFT_SPEAKER_AVG_G, {-1}},
+    {UPPER_LEFT_SPEAKER_AVG_B, {-1}},
+    {UPPER_RIGHT_SPEAKER_AVG_R, {-1}},
+    {UPPER_RIGHT_SPEAKER_AVG_G, {-1}},
+    {UPPER_RIGHT_SPEAKER_AVG_B, {-1}},
+    {LEFT_WING_AVG_R, {WING_LEFT_UP_R, -1}},
+    {LEFT_WING_AVG_G, {WING_LEFT_UP_G, -1}},
+    {LEFT_WING_AVG_B, {WING_LEFT_UP_B, -1}},
+    {RIGHT_WING_AVG_R, {-1}},
+    {RIGHT_WING_AVG_G, {-1}},
+    {RIGHT_WING_AVG_B, {-1}},
+    {LOWER_LEFT_SPEAKER_AVG_R, {-1}},
+    {LOWER_LEFT_SPEAKER_AVG_G, {-1}},
+    {LOWER_LEFT_SPEAKER_AVG_B, {-1}},
+    {LOWER_RIGHT_SPEAKER_AVG_R, {-1}},
+    {LOWER_RIGHT_SPEAKER_AVG_G, {-1}},
+    {LOWER_RIGHT_SPEAKER_AVG_B, {-1}},
+    {CONTROL_PANEL_AVG_R, {CONTROLLER_R, -1}},
+    {CONTROL_PANEL_AVG_G, {CONTROLLER_G, -1}},
+    {CONTROL_PANEL_AVG_B, {CONTROLLER_B, -1}},
+    {WOOFER_AVG_R, {WOOFER_R, -1}},
+    {WOOFER_AVG_G, {WOOFER_G, -1}},
+    {WOOFER_AVG_B, {WOOFER_B, -1}},
+    {V_UNIT_AVG_R, {WING_LEFT_LOW_R, /*WING_RIGHT_LOW_R,*/ -1}},
+    {V_UNIT_AVG_G, {WING_LEFT_LOW_G, /*WING_RIGHT_LOW_G,*/ -1}},
+    {V_UNIT_AVG_B, {WING_LEFT_LOW_B, /*WING_RIGHT_LOW_B,*/ -1}},
+};
+
+static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
 {
-    // TODO
+    /*
+     * index mapping
+     * 0 - title - 222 bytes - 74 colors
+     * 1 - upper left speaker - 36 bytes - 12 colors
+     * 2 - upper right speaker - 36 bytes - 12 colors
+     * 3 - left wing - 168 bytes - 56 colors
+     * 4 - right wing - 168 bytes - 56 colors
+     * 5 - control panel - 282 bytes - 94 colors
+     * 6 - lower left speaker - 36 bytes - 12 colors
+     * 7 - lower right speaker - 36 bytes - 12 colors
+     * 8 - woofer - 42 bytes - 14 colors
+     * 9 - v unit - 258 bytes - 86 colors
+     *
+     * data is stored in RGB order, 3 bytes per color
+     *
+     * TODO: expose this data to sdvxio API
+     */
+
+    struct tape_led_mapping {
+        size_t data_size;
+        int index_r, index_g, index_b;
+    };
+
+    static const struct tape_led_mapping mapping[] = {
+        {74, TITLE_AVG_R, TITLE_AVG_G, TITLE_AVG_B},
+        {12,
+         UPPER_LEFT_SPEAKER_AVG_R,
+         UPPER_LEFT_SPEAKER_AVG_G,
+         UPPER_LEFT_SPEAKER_AVG_B},
+        {12,
+         UPPER_RIGHT_SPEAKER_AVG_R,
+         UPPER_RIGHT_SPEAKER_AVG_G,
+         UPPER_RIGHT_SPEAKER_AVG_B},
+        {56, LEFT_WING_AVG_R, LEFT_WING_AVG_G, LEFT_WING_AVG_B},
+        {56, RIGHT_WING_AVG_R, RIGHT_WING_AVG_G, RIGHT_WING_AVG_B},
+        {94, CONTROL_PANEL_AVG_R, CONTROL_PANEL_AVG_G, CONTROL_PANEL_AVG_B},
+        {12,
+         LOWER_LEFT_SPEAKER_AVG_R,
+         LOWER_LEFT_SPEAKER_AVG_G,
+         LOWER_LEFT_SPEAKER_AVG_B},
+        {12,
+         LOWER_RIGHT_SPEAKER_AVG_R,
+         LOWER_RIGHT_SPEAKER_AVG_G,
+         LOWER_RIGHT_SPEAKER_AVG_B},
+        {14, WOOFER_AVG_R, WOOFER_AVG_G, WOOFER_AVG_B},
+        {86, V_UNIT_AVG_R, V_UNIT_AVG_G, V_UNIT_AVG_B},
+    };
+
+    if (tapeled_is_enabled() &&
+        index < lengthof(mapping)) {
+        const struct tape_led_mapping *map = &mapping[index];
+
+        tapeled_rgb_t rgb = tapeled_pick_color(data, map->data_size);
+
+        // hack for leds being dim white on init
+        if (rgb.r == 8 && rgb.g == 8 && rgb.b == 8) {
+            rgb.r = 0;
+            rgb.g = 0;
+            rgb.b = 0;
+        }
+
+        for (int i = 0; g_rgb_maps[map->index_r].pwm_channels[i] != -1; i++) {
+            sdvx_io_set_pwm_light(
+                g_rgb_maps[map->index_r].pwm_channels[i], rgb.r);
+        }
+
+        for (int i = 0; g_rgb_maps[map->index_g].pwm_channels[i] != -1; i++) {
+            sdvx_io_set_pwm_light(
+                g_rgb_maps[map->index_g].pwm_channels[i], rgb.g);
+        }
+
+        for (int i = 0; g_rgb_maps[map->index_b].pwm_channels[i] != -1; i++) {
+            sdvx_io_set_pwm_light(
+                g_rgb_maps[map->index_b].pwm_channels[i], rgb.b);
+        }
+
+        // sdvx_io_write_output();
+    }
 }
 
 // libaio-iob
@@ -557,11 +734,6 @@ void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val)
     if (force_headphones) {
         log_info("aio_iob2_hook_init: force_headphones has been enabled");
     }
-
-    // if (!sdvx_io_init(
-    //         avs_thread_create, avs_thread_join, avs_thread_destroy)) {
-    //     log_fatal("Initializing SDVX IO backend failed");
-    // }
 
     if (avs_is_active()) {
         log_to_external(

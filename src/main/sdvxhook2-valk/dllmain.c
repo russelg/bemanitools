@@ -106,6 +106,10 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
                 avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing sdvx IO backend failed");
         }
+
+        log_info("locking coin mech");
+        sdvx_io_set_coin_blocker(false);
+        sdvx_io_write_output();
     }
 
     /* Start up EAMIO.DLL */

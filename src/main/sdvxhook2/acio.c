@@ -36,6 +36,7 @@ void ac_io_port_init(bool use_new_reader)
         ac_io_emu_init(&ac_io_emu, L"COM1");
         ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
         ac_io_emu_icca_set_version(&ac_io_emu_icca, v170);
+        ac_io_emu_icca_set_product_code(&ac_io_emu_icca, AC_IO_EMU_PROD_CODE_ICCC);
     } else {
         ac_io_emu_init(&ac_io_emu, L"\\\\.\\COM2");
         ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);

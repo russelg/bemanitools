@@ -191,6 +191,7 @@ include src/main/popnhook1/Module.mk
 include src/main/popnio/Module.mk
 include src/main/pcbidgen/Module.mk
 include src/main/sdvxhook/Module.mk
+include src/main/sdvxhook-util/Module.mk
 include src/main/sdvxhook2-cn/Module.mk
 include src/main/sdvxhook2/Module.mk
 include src/main/sdvxhook2-valk/Module.mk
@@ -614,6 +615,7 @@ $(zipdir)/sdvx-05-to-06.zip: \
 		dist/sdvx5/config.bat \
 		dist/sdvx5/gamestart.bat \
 		dist/sdvx5/sdvxhook2.conf \
+		dist/sdvx5/sdvxhook2-valk.conf \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

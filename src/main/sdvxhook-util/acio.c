@@ -18,7 +18,7 @@
 #include "hook/iohook.h"
 #include "hooklib/rs232.h"
 
-#include "sdvxhook2/acio.h"
+#include "sdvxhook-util/acio.h"
 
 #include "imports/avs.h"
 
@@ -30,13 +30,9 @@
 static struct ac_io_emu ac_io_emu;
 static struct ac_io_emu_icca ac_io_emu_icca;
 
-void ac_io_port_init(bool use_new_reader)
+void ac_io_port_init(const wchar_t *card_reader_port)
 {
-    if (use_new_reader) {
-        ac_io_emu_init(&ac_io_emu, L"COM1");
-    } else {
-        ac_io_emu_init(&ac_io_emu, L"\\\\.\\COM2");
-    }
+    ac_io_emu_init(&ac_io_emu, card_reader_port);
 
     ac_io_emu_icca_init(&ac_io_emu_icca, &ac_io_emu, 0);
     ac_io_emu_icca_set_version(&ac_io_emu_icca, v170);

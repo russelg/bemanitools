@@ -13,7 +13,7 @@
 #include "hook/com-proxy.h"
 #include "hook/table.h"
 
-#include "sdvxhook2/power.h"
+#include "sdvxhook-util/power.h"
 
 #include "util/log.h"
 

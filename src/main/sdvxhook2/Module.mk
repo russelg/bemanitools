@@ -22,11 +22,9 @@ libs_sdvxhook2      := \
     cconfig \
     util \
     eamio \
+    sdvxhook-util \
 
 src_sdvxhook2       := \
-    acio.c \
     bi2a.c \
     dllmain.c \
     config-io.c \
-    nvapi.c \
-    power.c \

@@ -20,10 +20,9 @@
 
 #include "sdvxhook2-valk/config-io.h"
 #include "sdvxhook2-valk/iob2.h"
-
-#include "sdvxhook2/acio.h"
-#include "sdvxhook2/nvapi.h"
-#include "sdvxhook2/power.h"
+#include "sdvxhook-util/acio.h"
+#include "sdvxhook-util/nvapi.h"
+#include "sdvxhook-util/power.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -139,7 +138,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     }
 
     if (!config_io.disable_card_reader_emu) {
-        ac_io_port_init(config_io.com1_card_reader);
+        ac_io_port_init(str_widen(config_io.card_reader_port));
     }
 
     if (!config_cam.disable_emu) {

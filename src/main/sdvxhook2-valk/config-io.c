@@ -12,7 +12,7 @@
 #define SDVXHOOK2_VALK_CONFIG_IO_DISABLE_FILE_HOOKS_KEY "io.disable_file_hooks"
 #define SDVXHOOK2_VALK_CONFIG_IO_DISABLE_POWER_HOOKS_KEY "io.disable_power_hooks"
 #define SDVXHOOK2_VALK_CONFIG_IO_DISABLE_NVAPI_HOOKS_KEY "io.disable_nvapi_hooks"
-#define SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY "io.com1_card_reader"
+#define SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY "io.card_reader_port"
 
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_BIO2_EMU_VALUE false
@@ -21,7 +21,7 @@
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_FILE_HOOKS_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_POWER_HOOKS_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_NVAPI_HOOKS_VALUE false
-#define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE false
+#define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE "COM2"
 
 void sdvxhook2_valk_config_io_init(struct cconfig *config)
 {
@@ -71,11 +71,11 @@ void sdvxhook2_valk_config_io_init(struct cconfig *config)
         "Disables the built in NVAPI control hooks, allowing game to modify "
         "system monitor settings");
 
-    cconfig_util_set_bool(
+    cconfig_util_set_str(
         config,
         SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY,
         SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE,
-        "Emulates the card reader on COM1 instead of COM2");
+        "Emulated card reader serial port. Probably COM2");
 }
 
 void sdvxhook2_valk_config_io_get(
@@ -165,14 +165,15 @@ void sdvxhook2_valk_config_io_get(
             SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_NVAPI_HOOKS_VALUE);
     }
 
-    if (!cconfig_util_get_bool(
+    if (!cconfig_util_get_str(
             config,
             SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY,
-            &config_io->com1_card_reader,
+            config_io->card_reader_port,
+            sizeof(config_io->card_reader_port) - 1,
             SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE)) {
         log_warning(
             "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
+            "to default '%s'",
             SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY,
             SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE);
     }

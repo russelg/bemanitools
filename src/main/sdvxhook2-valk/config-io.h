@@ -14,7 +14,7 @@ struct sdvxhook2_valk_config_io {
     bool disable_file_hooks;
     bool disable_power_hooks;
     bool disable_nvapi_hooks;
-    bool com1_card_reader;
+    char card_reader_port[64];
 };
 
 void sdvxhook2_valk_config_io_init(struct cconfig *config);

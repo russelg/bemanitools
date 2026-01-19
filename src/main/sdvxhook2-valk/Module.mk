@@ -20,13 +20,11 @@ libs_sdvxhook2-valk := \
     hooklib \
     cconfig \
     util \
-    eamio
+    eamio \
+    sdvxhook-util \
 
 src_sdvxhook2-valk := \
     dllmain.c \
     iob2.c \
     tapeled.c \
-    config-io.c \
-    ../sdvxhook2/acio.c \
-    ../sdvxhook2/nvapi.c \
-    ../sdvxhook2/power.c
+    config-io.c

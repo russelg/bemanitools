@@ -1,6 +1,11 @@
 # spice-sdvxio
 
-[Read documentation here](doc/sdvxhook/spice-sdvxio.md)
+[Read **spice-sdvxio** documentation here](doc/sdvxhook/spice-sdvxio.md)
+
+
+# sdvxhook2-valk
+
+[Read **sdvxhook2-valk** documentation here](doc/sdvxhook/sdvxhook2-valk.md)
 
 # Bemanitools 5
 

@@ -37,6 +37,11 @@ You'll need the following files:
 modules\launcher.exe -H 268435456 -K sdvxhook2-valk.dll soundvoltex.dll --config sdvxhook2-valk.conf %*
 ```
 
+Other common `launcher.exe` arguments:
+- Service URL: `-S http://eamuse.konami.fun/`
+- PCBID: `-P 00010203040506070809`
+- Log file: `-Y log.txt`
+
 ## Sample config
 
 All supported options are included in the bundled `sdvxhook2-valk.conf`.

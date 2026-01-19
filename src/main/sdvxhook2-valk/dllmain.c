@@ -38,7 +38,7 @@
 #include "util/thread.h"
 
 #define SDVXHOOK2_VALK_INFO_HEADER \
-    "sdvxhook for Valkyrie"         \
+    "sdvxhook for Valkyrie"        \
     ", build " __DATE__ " " __TIME__ ", gitrev " STRINGIFY(GITREV) "\n"
 #define SDVXHOOK2_VALK_CMD_USAGE \
     "Usage: launcher.exe -K sdvxhook2-valk.dll <soundvoltex.dll> [options...]"
@@ -106,10 +106,6 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
                 avs_thread_create, avs_thread_join, avs_thread_destroy)) {
             log_fatal("Initializing sdvx IO backend failed");
         }
-
-        log_info("locking coin mech");
-        sdvx_io_set_coin_blocker(false);
-        sdvx_io_write_output();
     }
 
     /* Start up EAMIO.DLL */
@@ -124,8 +120,8 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
         }
     }
 
-    /* iohooks are okay, even if emu is disabled since the fake handlers won't be
-     * used */
+    /* iohooks are okay, even if emu is disabled since the fake handlers won't
+     * be used */
     iohook_push_handler(ac_io_port_dispatch_irp);
 
     if (!config_io.disable_file_hooks) {
@@ -139,8 +135,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
 
     if (!config_io.disable_bio2_emu) {
         aio_iob2_hook_init(
-            config_io.disable_poll_limiter,
-            config_io.force_headphones);
+            config_io.disable_poll_limiter, config_io.force_headphones);
     }
 
     if (!config_io.disable_card_reader_emu) {

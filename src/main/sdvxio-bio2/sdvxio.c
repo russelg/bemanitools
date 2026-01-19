@@ -39,7 +39,6 @@ static atomic_bool running;
 static atomic_bool processing_io;
 static int16_t bio2_node_id;
 
-
 uint8_t wing_staging[12];
 struct bi2a_sdvx_state_out pout_staging;
 struct bi2a_sdvx_state_out pout_ready;
@@ -149,6 +148,18 @@ bool sdvx_io_init(
 
         running = true;
         log_warning("sdvxio-bio2 now running");
+
+        if (config_bio2.initialize_amps) {
+            log_info("Initializing amps to level %d", config_bio2.amp_volume);
+            sdvx_io_set_amp_volume(
+                config_bio2.amp_volume,
+                config_bio2.amp_volume,
+                config_bio2.amp_volume);
+        }
+
+        log_info("Locking coin mech (so the game can unlock it later)");
+        sdvx_io_set_coin_blocker(false);
+        sdvx_io_write_output();
     } else {
         log_warning("No KFCA device found");
     }

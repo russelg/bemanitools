@@ -70,38 +70,55 @@ struct AIO_SCI {
     void *filler;
 };
 
+static struct AIO_NODE *
+my_aioIob2Bi2xUFC_Create(struct AIO_NMGR *node_mgr, uint8_t param);
+
 #pragma pack(push, 1)
-struct bi2x_device_status {
-    uint8_t unk1[4];
+struct sys_input {
+    uint8_t dev_io_counter;
+    uint8_t b_ex_io_a_err;
+    uint8_t b_ex_io_b_err;
+    uint8_t b_pc_power_on;
+    uint8_t b_pc_power_check;
+    uint8_t coin_count;
     uint8_t b_test;
     uint8_t b_service;
-    uint8_t b_coinmech;
-    uint8_t unk2;
-    uint8_t b_start[2];
-    uint8_t b_vefx;
-    uint8_t b_effect;
-    uint8_t b_headphone[2];
+    uint8_t b_coin_sw;
+    uint8_t b_coin_jam;
+    uint8_t b_hp_detect;
+};
 
-    uint8_t unk3[6]; // 0x10-0x13
-    uint8_t a_turntable[2];
-    uint8_t unk4;
-    uint8_t unk6[4];
-    uint8_t b_p1[7];
-    uint8_t b_p2[7];
-    uint8_t unk7[7];
+struct game_input {
+    uint16_t analog_left;
+    uint16_t analog_right;
+    struct {
+        bool b_start : 1;
+        bool b_a : 1;
+        bool b_b : 1;
+        bool b_c : 1;
+        bool b_d : 1;
+        bool b_fx_l : 1;
+        bool b_fx_r : 1;
+        uint8_t padding : 1;
+    } buttons;
+};
 
-    uint8_t unk8[0x9A]; // 0x30-0xC9
+struct dev_status {
+    uint8_t input_counter;
+    uint8_t output_counter;
+    uint8_t io_reset_counter;
+    uint8_t tape_led_counter;
+    uint8_t tape_led_rate[8];
+    struct sys_input sys_input;
+    uint8_t unk_1[289];
+    struct game_input game_input[16];
+    uint8_t unk_2[22];
 };
 #pragma pack(pop)
 
 _Static_assert(
-    sizeof(struct bi2x_device_status) == 202,
-    "bi2x_device_status is the wrong size");
+    sizeof(struct dev_status) == 414, "dev_status is the wrong size");
 
-static struct AIO_NODE *
-my_aioIob2Bi2xUFC_Create(struct AIO_NMGR *node_mgr, uint8_t param);
-
-struct dev_status;
 static void my_GetDeviceStatus(void *this, struct dev_status *status);
 static void my_SetWatchDogTimer(void *this, char timer);
 static void my_IoReset(void *this, unsigned int state);
@@ -247,57 +264,10 @@ static uint8_t check_pin(uint16_t value, uint8_t pin)
     return (value >> pin) & 1;
 }
 
-#pragma pack(push, 1)
-struct sys_input {
-    uint8_t dev_io_counter;
-    uint8_t b_ex_io_a_err;
-    uint8_t b_ex_io_b_err;
-    uint8_t b_pc_power_on;
-    uint8_t b_pc_power_check;
-    uint8_t coin_count;
-    uint8_t b_test;
-    uint8_t b_service;
-    uint8_t b_coin_sw;
-    uint8_t b_coin_jam;
-    uint8_t b_hp_detect;
-};
-
-struct game_input {
-    uint16_t analog_left;
-    uint16_t analog_right;
-    struct {
-        bool b_start : 1;
-        bool b_a : 1;
-        bool b_b : 1;
-        bool b_c : 1;
-        bool b_d : 1;
-        bool b_fx_l : 1;
-        bool b_fx_r : 1;
-        uint8_t padding : 1;
-    } buttons;
-};
-
-struct dev_status {
-    uint8_t input_counter;
-    uint8_t output_counter;
-    uint8_t io_reset_counter;
-    uint8_t tape_led_counter;
-    uint8_t tape_led_rate[8];
-    struct sys_input sys_input;
-    uint8_t unk_1[289];
-    struct game_input game_input[16];
-    uint8_t unk_2[22];
-};
-#pragma pack(pop)
-
-_Static_assert(
-    sizeof(struct dev_status) == 414, "dev_status is the wrong size");
-
 static uint8_t counter;
 static uint32_t sdvx_gpio_lights = 0;
 static void my_GetDeviceStatus(void *this, struct dev_status *status)
 {
-    // TODO: call sdvx_io_write_output here if needed
     sdvx_io_write_output();
     sdvx_gpio_lights = 0;
 
@@ -454,7 +424,7 @@ enum tape_led_light {
 };
 
 enum pwm_light {
-    TERMINATE = -1,
+    PIN_END = -1,
     WING_LEFT_UP_R,
     WING_LEFT_UP_G,
     WING_LEFT_UP_B,
@@ -488,36 +458,36 @@ struct light_map_rgb {
 // list with -1. e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above
 // issue. refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
 static const struct light_map_rgb g_rgb_maps[] = {
-    {TITLE_AVG_R, {-1}},
-    {TITLE_AVG_G, {-1}},
-    {TITLE_AVG_B, {-1}},
-    {UPPER_LEFT_SPEAKER_AVG_R, {-1}},
-    {UPPER_LEFT_SPEAKER_AVG_G, {-1}},
-    {UPPER_LEFT_SPEAKER_AVG_B, {-1}},
-    {UPPER_RIGHT_SPEAKER_AVG_R, {-1}},
-    {UPPER_RIGHT_SPEAKER_AVG_G, {-1}},
-    {UPPER_RIGHT_SPEAKER_AVG_B, {-1}},
-    {LEFT_WING_AVG_R, {WING_LEFT_UP_R, -1}},
-    {LEFT_WING_AVG_G, {WING_LEFT_UP_G, -1}},
-    {LEFT_WING_AVG_B, {WING_LEFT_UP_B, -1}},
-    {RIGHT_WING_AVG_R, {-1}},
-    {RIGHT_WING_AVG_G, {-1}},
-    {RIGHT_WING_AVG_B, {-1}},
-    {LOWER_LEFT_SPEAKER_AVG_R, {-1}},
-    {LOWER_LEFT_SPEAKER_AVG_G, {-1}},
-    {LOWER_LEFT_SPEAKER_AVG_B, {-1}},
-    {LOWER_RIGHT_SPEAKER_AVG_R, {-1}},
-    {LOWER_RIGHT_SPEAKER_AVG_G, {-1}},
-    {LOWER_RIGHT_SPEAKER_AVG_B, {-1}},
-    {CONTROL_PANEL_AVG_R, {CONTROLLER_R, -1}},
-    {CONTROL_PANEL_AVG_G, {CONTROLLER_G, -1}},
-    {CONTROL_PANEL_AVG_B, {CONTROLLER_B, -1}},
-    {WOOFER_AVG_R, {WOOFER_R, -1}},
-    {WOOFER_AVG_G, {WOOFER_G, -1}},
-    {WOOFER_AVG_B, {WOOFER_B, -1}},
-    {V_UNIT_AVG_R, {WING_LEFT_LOW_R, /*WING_RIGHT_LOW_R,*/ -1}},
-    {V_UNIT_AVG_G, {WING_LEFT_LOW_G, /*WING_RIGHT_LOW_G,*/ -1}},
-    {V_UNIT_AVG_B, {WING_LEFT_LOW_B, /*WING_RIGHT_LOW_B,*/ -1}},
+    {TITLE_AVG_R, {PIN_END}},
+    {TITLE_AVG_G, {PIN_END}},
+    {TITLE_AVG_B, {PIN_END}},
+    {UPPER_LEFT_SPEAKER_AVG_R, {PIN_END}},
+    {UPPER_LEFT_SPEAKER_AVG_G, {PIN_END}},
+    {UPPER_LEFT_SPEAKER_AVG_B, {PIN_END}},
+    {UPPER_RIGHT_SPEAKER_AVG_R, {PIN_END}},
+    {UPPER_RIGHT_SPEAKER_AVG_G, {PIN_END}},
+    {UPPER_RIGHT_SPEAKER_AVG_B, {PIN_END}},
+    {LEFT_WING_AVG_R, {WING_LEFT_UP_R, PIN_END}},
+    {LEFT_WING_AVG_G, {WING_LEFT_UP_G, PIN_END}},
+    {LEFT_WING_AVG_B, {WING_LEFT_UP_B, PIN_END}},
+    {RIGHT_WING_AVG_R, {PIN_END}},
+    {RIGHT_WING_AVG_G, {PIN_END}},
+    {RIGHT_WING_AVG_B, {PIN_END}},
+    {LOWER_LEFT_SPEAKER_AVG_R, {PIN_END}},
+    {LOWER_LEFT_SPEAKER_AVG_G, {PIN_END}},
+    {LOWER_LEFT_SPEAKER_AVG_B, {PIN_END}},
+    {LOWER_RIGHT_SPEAKER_AVG_R, {PIN_END}},
+    {LOWER_RIGHT_SPEAKER_AVG_G, {PIN_END}},
+    {LOWER_RIGHT_SPEAKER_AVG_B, {PIN_END}},
+    {CONTROL_PANEL_AVG_R, {CONTROLLER_R, PIN_END}},
+    {CONTROL_PANEL_AVG_G, {CONTROLLER_G, PIN_END}},
+    {CONTROL_PANEL_AVG_B, {CONTROLLER_B, PIN_END}},
+    {WOOFER_AVG_R, {WOOFER_R, PIN_END}},
+    {WOOFER_AVG_G, {WOOFER_G, PIN_END}},
+    {WOOFER_AVG_B, {WOOFER_B, PIN_END}},
+    {V_UNIT_AVG_R, {WING_LEFT_LOW_R, /*WING_RIGHT_LOW_R,*/ PIN_END}},
+    {V_UNIT_AVG_G, {WING_LEFT_LOW_G, /*WING_RIGHT_LOW_G,*/ PIN_END}},
+    {V_UNIT_AVG_B, {WING_LEFT_LOW_B, /*WING_RIGHT_LOW_B,*/ PIN_END}},
 };
 
 static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
@@ -583,22 +553,20 @@ static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
             rgb.b = 0;
         }
 
-        for (int i = 0; g_rgb_maps[map->index_r].pwm_channels[i] != -1; i++) {
+        for (int i = 0; g_rgb_maps[map->index_r].pwm_channels[i] != PIN_END; i++) {
             sdvx_io_set_pwm_light(
                 g_rgb_maps[map->index_r].pwm_channels[i], rgb.r);
         }
 
-        for (int i = 0; g_rgb_maps[map->index_g].pwm_channels[i] != -1; i++) {
+        for (int i = 0; g_rgb_maps[map->index_g].pwm_channels[i] != PIN_END; i++) {
             sdvx_io_set_pwm_light(
                 g_rgb_maps[map->index_g].pwm_channels[i], rgb.g);
         }
 
-        for (int i = 0; g_rgb_maps[map->index_b].pwm_channels[i] != -1; i++) {
+        for (int i = 0; g_rgb_maps[map->index_b].pwm_channels[i] != PIN_END; i++) {
             sdvx_io_set_pwm_light(
                 g_rgb_maps[map->index_b].pwm_channels[i], rgb.b);
         }
-
-        // sdvx_io_write_output();
     }
 }
 

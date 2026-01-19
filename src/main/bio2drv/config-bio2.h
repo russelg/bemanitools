@@ -9,6 +9,8 @@ struct bio2drv_config_bio2 {
     bool autodetect;
     char port[64];
     int32_t baud;
+    bool initialize_amps;
+    int amp_volume;
 };
 
 void bio2drv_config_bio2_init(struct cconfig *config);

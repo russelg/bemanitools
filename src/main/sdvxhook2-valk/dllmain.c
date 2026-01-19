@@ -18,11 +18,12 @@
 #include "hooklib/memfile.h"
 #include "hooklib/rs232.h"
 
-#include "sdvxhook2-valk/config-io.h"
-#include "sdvxhook2-valk/iob2.h"
 #include "sdvxhook-util/acio.h"
 #include "sdvxhook-util/nvapi.h"
 #include "sdvxhook-util/power.h"
+#include "sdvxhook2-valk/config-io.h"
+#include "sdvxhook2-valk/iob2.h"
+#include "sdvxhook2-valk/tapeled.h"
 
 #include "camhook/cam.h"
 #include "camhook/config-cam.h"
@@ -135,6 +136,23 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     if (!config_io.disable_bio2_emu) {
         aio_iob2_hook_init(
             config_io.disable_poll_limiter, config_io.force_headphones);
+
+        if (str_eq(config_io.tape_led_algorithm, "off")) {
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_NONE;
+        } else if (str_eq(config_io.tape_led_algorithm, "first")) {
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_FIRST;
+        } else if (str_eq(config_io.tape_led_algorithm, "middle")) {
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_MIDDLE;
+        } else if (str_eq(config_io.tape_led_algorithm, "last")) {
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_LAST;
+        } else if (str_eq(config_io.tape_led_algorithm, "avg")) {
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_AVERAGE;
+        } else {
+            log_warning(
+                "Unknown tape LED algorithm '%s', falling back to 'middle'",
+                config_io.tape_led_algorithm);
+            TAPE_LED_ALGORITHM = TAPE_LED_USE_MIDDLE;
+        }
     }
 
     if (!config_io.disable_card_reader_emu) {

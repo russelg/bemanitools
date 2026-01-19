@@ -13,6 +13,7 @@
 #define SDVXHOOK2_VALK_CONFIG_IO_DISABLE_POWER_HOOKS_KEY "io.disable_power_hooks"
 #define SDVXHOOK2_VALK_CONFIG_IO_DISABLE_NVAPI_HOOKS_KEY "io.disable_nvapi_hooks"
 #define SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY "io.card_reader_port"
+#define SDVXHOOK2_VALK_CONFIG_IO_TAPE_LED_ALGORITHM_KEY "io.tape_led_algorithm"
 
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_CARD_READER_EMU_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_BIO2_EMU_VALUE false
@@ -22,6 +23,7 @@
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_POWER_HOOKS_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_DISABLE_NVAPI_HOOKS_VALUE false
 #define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE "COM2"
+#define SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_TAPE_LED_ALGORITHM_VALUE "middle"
 
 void sdvxhook2_valk_config_io_init(struct cconfig *config)
 {
@@ -76,6 +78,14 @@ void sdvxhook2_valk_config_io_init(struct cconfig *config)
         SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY,
         SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE,
         "Emulated card reader serial port. Probably COM2");
+
+    cconfig_util_set_str(
+        config,
+        SDVXHOOK2_VALK_CONFIG_IO_TAPE_LED_ALGORITHM_KEY,
+        SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_TAPE_LED_ALGORITHM_VALUE,
+        "Algorithm for picking the tape LED color: 'avg' (Average color), "
+        "'first' (First LED), 'middle' (Middle LED), 'last' (Last LED), "
+        "'off' (Off)");
 }
 
 void sdvxhook2_valk_config_io_get(
@@ -176,5 +186,18 @@ void sdvxhook2_valk_config_io_get(
             "to default '%s'",
             SDVXHOOK2_VALK_CONFIG_IO_COM1_CARD_READER_KEY,
             SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_COM1_CARD_READER_VALUE);
+    }
+
+    if (!cconfig_util_get_str(
+            config,
+            SDVXHOOK2_VALK_CONFIG_IO_TAPE_LED_ALGORITHM_KEY,
+            config_io->tape_led_algorithm,
+            sizeof(config_io->tape_led_algorithm) - 1,
+            SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_TAPE_LED_ALGORITHM_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%s'",
+            SDVXHOOK2_VALK_CONFIG_IO_TAPE_LED_ALGORITHM_KEY,
+            SDVXHOOK2_VALK_CONFIG_IO_DEFAULT_TAPE_LED_ALGORITHM_VALUE);
     }
 }

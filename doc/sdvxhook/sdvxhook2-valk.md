@@ -1,3 +1,5 @@
+# sdvxhook2-valk
+
 This library hooks the BI2X API used by SDVX Valkyrie mode.
 
 The main use case of this is to use `sdvxio-bio2` to get valkyrie-mode support on a Nemsys, including LED support.
@@ -57,6 +59,10 @@ io.disable_poll_limiter=false
 
 # Forces game to think headphones are attached
 io.force_headphones=false
+
+# Algorithm for picking the tape LED color. Change this to experiment with the lights.
+# avg (Average color), first (First LED), middle (Middle LED), last (Last LED), off (Off)
+io.tape_led_algorithm=middle
 
 #
 # The following hooks are disabled in this sample config as cabinets do not typically require these hooks.

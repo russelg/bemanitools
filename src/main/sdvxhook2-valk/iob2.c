@@ -233,6 +233,8 @@ static struct AIO_NMGR *assigned_mgr;
 static struct AIO_NODE *assigned_node;
 static struct AIO_WRFIRM *assigned_fw_obj;
 
+static struct sdvxhook2_valk_config_leds *valk_config_leds;
+
 static bool poll_delay;
 static bool force_headphones;
 
@@ -454,19 +456,22 @@ static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
             rgb.b = 0;
         }
 
-        for (int i = 0; g_rgb_maps[map->index_r].pwm_channels[i] != PIN_END; i++) {
-            sdvx_io_set_pwm_light(
-                g_rgb_maps[map->index_r].pwm_channels[i], rgb.r);
+        const struct light_config_detail *detail_r = &light_config_details[map->index_r];
+        int pin_r = *(int *) (((char *) valk_config_leds) + detail_r->offset);
+        if (pin_r != PIN_END) {
+            sdvx_io_set_pwm_light(pin_r, rgb.r);
         }
 
-        for (int i = 0; g_rgb_maps[map->index_g].pwm_channels[i] != PIN_END; i++) {
-            sdvx_io_set_pwm_light(
-                g_rgb_maps[map->index_g].pwm_channels[i], rgb.g);
+        const struct light_config_detail *detail_g = &light_config_details[map->index_g];
+        int pin_g = *(int *) (((char *) valk_config_leds) + detail_g->offset);
+        if (pin_g != PIN_END) {
+            sdvx_io_set_pwm_light(pin_g, rgb.g);
         }
 
-        for (int i = 0; g_rgb_maps[map->index_b].pwm_channels[i] != PIN_END; i++) {
-            sdvx_io_set_pwm_light(
-                g_rgb_maps[map->index_b].pwm_channels[i], rgb.b);
+        const struct light_config_detail *detail_b = &light_config_details[map->index_b];
+        int pin_b = *(int *) (((char *) valk_config_leds) + detail_b->offset);
+        if (pin_b != PIN_END) {
+            sdvx_io_set_pwm_light(pin_b, rgb.b);
         }
     }
 }
@@ -591,10 +596,12 @@ static unsigned int my_aioNodeMgr_Destroy(struct AIO_NMGR *mgr)
     return real_aioNodeMgr_Destroy(mgr);
 }
 
-void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val)
+void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val, struct sdvxhook2_valk_config_leds *config_leds)
 {
     poll_delay = !disable_poll_limiter;
     force_headphones = force_headphones_val;
+
+    valk_config_leds = config_leds;
 
     if (!poll_delay) {
         log_warning("aio_iob2_hook_init: poll_delay has been disabled");

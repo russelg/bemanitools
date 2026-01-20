@@ -96,9 +96,237 @@ struct sdvxhook2_valk_config_leds {
     int v_unit_avg_b_pin;
 };
 
+#define SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_R_PIN_KEY "leds.title_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_G_PIN_KEY "leds.title_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_B_PIN_KEY "leds.title_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_R_PIN_KEY "leds.upper_left_speaker_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_G_PIN_KEY "leds.upper_left_speaker_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_B_PIN_KEY "leds.upper_left_speaker_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_R_PIN_KEY "leds.upper_right_speaker_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_G_PIN_KEY "leds.upper_right_speaker_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_B_PIN_KEY "leds.upper_right_speaker_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_R_PIN_KEY "leds.left_wing_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_G_PIN_KEY "leds.left_wing_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_B_PIN_KEY "leds.left_wing_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_R_PIN_KEY "leds.right_wing_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_G_PIN_KEY "leds.right_wing_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_B_PIN_KEY "leds.right_wing_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_R_PIN_KEY "leds.lower_left_speaker_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_G_PIN_KEY "leds.lower_left_speaker_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_B_PIN_KEY "leds.lower_left_speaker_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_R_PIN_KEY "leds.lower_right_speaker_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_G_PIN_KEY "leds.lower_right_speaker_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_B_PIN_KEY "leds.lower_right_speaker_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_R_PIN_KEY "leds.control_panel_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_G_PIN_KEY "leds.control_panel_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_B_PIN_KEY "leds.control_panel_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_R_PIN_KEY "leds.woofer_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_G_PIN_KEY "leds.woofer_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_B_PIN_KEY "leds.woofer_avg_b_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_R_PIN_KEY "leds.v_unit_avg_r_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_G_PIN_KEY "leds.v_unit_avg_g_pin"
+#define SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_B_PIN_KEY "leds.v_unit_avg_b_pin"
+
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_R_PIN_VALUE (WING_LEFT_UP_R)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_G_PIN_VALUE (WING_LEFT_UP_G)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_B_PIN_VALUE (WING_LEFT_UP_B)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_R_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_G_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_R_PIN_VALUE (CONTROLLER_R)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_G_PIN_VALUE (CONTROLLER_G)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_B_PIN_VALUE (CONTROLLER_B)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_R_PIN_VALUE (WOOFER_AVG_R)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_G_PIN_VALUE (WOOFER_AVG_G)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_B_PIN_VALUE (WOOFER_AVG_B)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_R_PIN_VALUE (WING_LEFT_LOW_R)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_G_PIN_VALUE (WING_LEFT_LOW_G)
+#define SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_B_PIN_VALUE (WING_LEFT_LOW_B)
+
+struct light_config_detail {
+    int tape_led_light;
+    const char *led_name;
+    const char *config_key;
+    int config_default;
+    size_t offset;
+};
+
+// Due to a quirk of the IO, wing L/R cannot be set independently.
+// You should only assign one of the Left/Right to the up/low LEDs, otherwise
+// brightness can be weird. You can assign up to 3 pins per LED, just end the
+// list with -1. e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above
+// issue. refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
+static const struct light_config_detail light_config_details[] = {
+    {TITLE_AVG_R,
+     "Title Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, title_avg_r_pin)},
+    {TITLE_AVG_G,
+     "Title Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, title_avg_g_pin)},
+    {TITLE_AVG_B,
+     "Title Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_TITLE_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, title_avg_b_pin)},
+    {UPPER_LEFT_SPEAKER_AVG_R,
+     "Upper Left Speaker Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_left_speaker_avg_r_pin)},
+    {UPPER_LEFT_SPEAKER_AVG_G,
+     "Upper Left Speaker Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_left_speaker_avg_g_pin)},
+    {UPPER_LEFT_SPEAKER_AVG_B,
+     "Upper Left Speaker Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_LEFT_SPEAKER_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_LEFT_SPEAKER_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_left_speaker_avg_b_pin)},
+    {UPPER_RIGHT_SPEAKER_AVG_R,
+     "Upper Right Speaker Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_right_speaker_avg_r_pin)},
+    {UPPER_RIGHT_SPEAKER_AVG_G,
+     "Upper Right Speaker Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_right_speaker_avg_g_pin)},
+    {UPPER_RIGHT_SPEAKER_AVG_B,
+     "Upper Right Speaker Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_UPPER_RIGHT_SPEAKER_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_UPPER_RIGHT_SPEAKER_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, upper_right_speaker_avg_b_pin)},
+    {LEFT_WING_AVG_R,
+     "Left Wing Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, left_wing_avg_r_pin)},
+    {LEFT_WING_AVG_G,
+     "Left Wing Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, left_wing_avg_g_pin)},
+    {LEFT_WING_AVG_B,
+     "Left Wing Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LEFT_WING_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LEFT_WING_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, left_wing_avg_b_pin)},
+    {RIGHT_WING_AVG_R,
+     "Right Wing Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, right_wing_avg_r_pin)},
+    {RIGHT_WING_AVG_G,
+     "Right Wing Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, right_wing_avg_g_pin)},
+    {RIGHT_WING_AVG_B,
+     "Right Wing Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_RIGHT_WING_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_RIGHT_WING_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, right_wing_avg_b_pin)},
+    {LOWER_LEFT_SPEAKER_AVG_R,
+     "Lower Left Speaker Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_left_speaker_avg_r_pin)},
+    {LOWER_LEFT_SPEAKER_AVG_G,
+     "Lower Left Speaker Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_left_speaker_avg_g_pin)},
+    {LOWER_LEFT_SPEAKER_AVG_B,
+     "Lower Left Speaker Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_LEFT_SPEAKER_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_LEFT_SPEAKER_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_left_speaker_avg_b_pin)},
+    {LOWER_RIGHT_SPEAKER_AVG_R,
+     "Lower Right Speaker Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_right_speaker_avg_r_pin)},
+    {LOWER_RIGHT_SPEAKER_AVG_G,
+     "Lower Right Speaker Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_right_speaker_avg_g_pin)},
+    {LOWER_RIGHT_SPEAKER_AVG_B,
+     "Lower Right Speaker Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_LOWER_RIGHT_SPEAKER_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_LOWER_RIGHT_SPEAKER_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, lower_right_speaker_avg_b_pin)},
+    {CONTROL_PANEL_AVG_R,
+     "Control Panel Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, control_panel_avg_r_pin)},
+    {CONTROL_PANEL_AVG_G,
+     "Control Panel Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, control_panel_avg_g_pin)},
+    {CONTROL_PANEL_AVG_B,
+     "Control Panel Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_CONTROL_PANEL_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_CONTROL_PANEL_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, control_panel_avg_b_pin)},
+    {WOOFER_AVG_R,
+     "Woofer Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, woofer_avg_r_pin)},
+    {WOOFER_AVG_G,
+     "Woofer Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, woofer_avg_g_pin)},
+    {WOOFER_AVG_B,
+     "Woofer Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_WOOFER_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_WOOFER_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, woofer_avg_b_pin)},
+    {V_UNIT_AVG_R,
+     "V Unit Avg R",
+     SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_R_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_R_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, v_unit_avg_r_pin)},
+    {V_UNIT_AVG_G,
+     "V Unit Avg G",
+     SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_G_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_G_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, v_unit_avg_g_pin)},
+    {V_UNIT_AVG_B,
+     "V Unit Avg B",
+     SDVXHOOK2_VALK_CONFIG_LEDS_V_UNIT_AVG_B_PIN_KEY,
+     SDVXHOOK2_VALK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_B_PIN_VALUE,
+     offsetof(struct sdvxhook2_valk_config_leds, v_unit_avg_b_pin)},
+};
+
 void sdvxhook2_valk_config_leds_init(struct cconfig *config);
 
 void sdvxhook2_valk_config_leds_get(
-    struct sdvxhook2_valk_config_leds *config_io, struct cconfig *config);
+    struct sdvxhook2_valk_config_leds *config_leds, struct cconfig *config);
 
 #endif // SDVXHOOK2_VALK_CONFIG_LEDS_H

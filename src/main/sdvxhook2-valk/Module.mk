@@ -27,4 +27,5 @@ src_sdvxhook2-valk := \
     dllmain.c \
     iob2.c \
     tapeled.c \
-    config-io.c
+    config-io.c \
+    config-leds.c

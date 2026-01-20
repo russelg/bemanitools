@@ -31,6 +31,7 @@
 // we never instanciated IIDXIO ourselves, we assume that the original iidxhook9
 // does so
 #include "bemanitools/sdvxio.h"
+#include "sdvxhook2-valk/config-leds.h"
 #include "sdvxhook2-valk/iob2.h"
 #include "sdvxhook2-valk/tapeled.h"
 
@@ -389,106 +390,6 @@ static void my_SetPlayerButtonLamp(void *this, int sw_num, uint8_t state)
     // TODO: should sdvx_io_write_output() get called here?
     // sdvx_io_write_output();
 }
-
-enum tape_led_light {
-    TITLE_AVG_R,
-    TITLE_AVG_G,
-    TITLE_AVG_B,
-    UPPER_LEFT_SPEAKER_AVG_R,
-    UPPER_LEFT_SPEAKER_AVG_G,
-    UPPER_LEFT_SPEAKER_AVG_B,
-    UPPER_RIGHT_SPEAKER_AVG_R,
-    UPPER_RIGHT_SPEAKER_AVG_G,
-    UPPER_RIGHT_SPEAKER_AVG_B,
-    LEFT_WING_AVG_R,
-    LEFT_WING_AVG_G,
-    LEFT_WING_AVG_B,
-    RIGHT_WING_AVG_R,
-    RIGHT_WING_AVG_G,
-    RIGHT_WING_AVG_B,
-    LOWER_LEFT_SPEAKER_AVG_R,
-    LOWER_LEFT_SPEAKER_AVG_G,
-    LOWER_LEFT_SPEAKER_AVG_B,
-    LOWER_RIGHT_SPEAKER_AVG_R,
-    LOWER_RIGHT_SPEAKER_AVG_G,
-    LOWER_RIGHT_SPEAKER_AVG_B,
-    CONTROL_PANEL_AVG_R,
-    CONTROL_PANEL_AVG_G,
-    CONTROL_PANEL_AVG_B,
-    WOOFER_AVG_R,
-    WOOFER_AVG_G,
-    WOOFER_AVG_B,
-    V_UNIT_AVG_R,
-    V_UNIT_AVG_G,
-    V_UNIT_AVG_B,
-};
-
-enum pwm_light {
-    PIN_END = -1,
-    WING_LEFT_UP_R,
-    WING_LEFT_UP_G,
-    WING_LEFT_UP_B,
-    WING_RIGHT_UP_R,
-    WING_RIGHT_UP_G,
-    WING_RIGHT_UP_B,
-    WING_LEFT_LOW_R,
-    WING_LEFT_LOW_G,
-    WING_LEFT_LOW_B,
-    WING_RIGHT_LOW_R,
-    WING_RIGHT_LOW_G,
-    WING_RIGHT_LOW_B,
-    WOOFER_R,
-    WOOFER_G,
-    WOOFER_B,
-    CONTROLLER_R,
-    CONTROLLER_G,
-    CONTROLLER_B,
-    GENERATOR_R,
-    GENERATOR_G,
-};
-
-struct light_map_rgb {
-    int tape_led_light;
-    int pwm_channels[4];
-};
-
-// Due to a quirk of the IO, wing L/R cannot be set independently.
-// You should only assign one of the Left/Right to the up/low LEDs, otherwise
-// brightness can be weird. You can assign up to 3 pins per LED, just end the
-// list with -1. e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above
-// issue. refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
-static const struct light_map_rgb g_rgb_maps[] = {
-    {TITLE_AVG_R, {PIN_END}},
-    {TITLE_AVG_G, {PIN_END}},
-    {TITLE_AVG_B, {PIN_END}},
-    {UPPER_LEFT_SPEAKER_AVG_R, {PIN_END}},
-    {UPPER_LEFT_SPEAKER_AVG_G, {PIN_END}},
-    {UPPER_LEFT_SPEAKER_AVG_B, {PIN_END}},
-    {UPPER_RIGHT_SPEAKER_AVG_R, {PIN_END}},
-    {UPPER_RIGHT_SPEAKER_AVG_G, {PIN_END}},
-    {UPPER_RIGHT_SPEAKER_AVG_B, {PIN_END}},
-    {LEFT_WING_AVG_R, {WING_LEFT_UP_R, PIN_END}},
-    {LEFT_WING_AVG_G, {WING_LEFT_UP_G, PIN_END}},
-    {LEFT_WING_AVG_B, {WING_LEFT_UP_B, PIN_END}},
-    {RIGHT_WING_AVG_R, {PIN_END}},
-    {RIGHT_WING_AVG_G, {PIN_END}},
-    {RIGHT_WING_AVG_B, {PIN_END}},
-    {LOWER_LEFT_SPEAKER_AVG_R, {PIN_END}},
-    {LOWER_LEFT_SPEAKER_AVG_G, {PIN_END}},
-    {LOWER_LEFT_SPEAKER_AVG_B, {PIN_END}},
-    {LOWER_RIGHT_SPEAKER_AVG_R, {PIN_END}},
-    {LOWER_RIGHT_SPEAKER_AVG_G, {PIN_END}},
-    {LOWER_RIGHT_SPEAKER_AVG_B, {PIN_END}},
-    {CONTROL_PANEL_AVG_R, {CONTROLLER_R, PIN_END}},
-    {CONTROL_PANEL_AVG_G, {CONTROLLER_G, PIN_END}},
-    {CONTROL_PANEL_AVG_B, {CONTROLLER_B, PIN_END}},
-    {WOOFER_AVG_R, {WOOFER_R, PIN_END}},
-    {WOOFER_AVG_G, {WOOFER_G, PIN_END}},
-    {WOOFER_AVG_B, {WOOFER_B, PIN_END}},
-    {V_UNIT_AVG_R, {WING_LEFT_LOW_R, /*WING_RIGHT_LOW_R,*/ PIN_END}},
-    {V_UNIT_AVG_G, {WING_LEFT_LOW_G, /*WING_RIGHT_LOW_G,*/ PIN_END}},
-    {V_UNIT_AVG_B, {WING_LEFT_LOW_B, /*WING_RIGHT_LOW_B,*/ PIN_END}},
-};
 
 static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
 {

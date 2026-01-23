@@ -15,6 +15,14 @@ bool cconfig_util_get_int(
     int32_t *ret,
     int32_t default_value);
 
+bool cconfig_util_get_int_array(
+    struct cconfig *config,
+    const char *key,
+    int32_t *ret,
+    size_t len,
+    const int32_t *default_value,
+    const char *delimiter);
+
 bool cconfig_util_get_float(
     struct cconfig *config, const char *key, float *ret, float default_value);
 
@@ -37,6 +45,14 @@ bool cconfig_util_get_data(
 
 void cconfig_util_set_int(
     struct cconfig *config, const char *key, int32_t value, const char *desc);
+
+void cconfig_util_set_int_array(
+    struct cconfig *config,
+    const char *key,
+    const int32_t *value,
+    size_t count,
+    const char *delimiter,
+    const char *desc);
 
 void cconfig_util_set_float(
     struct cconfig *config, const char *key, float value, const char *desc);

@@ -10,6 +10,7 @@
 void sdvxhook2_valk_config_leds_init(struct cconfig *config)
 {
     char led_description[80];
+    int32_t default_pin;
 
     for (int i = 0; i < lengthof(light_config_details); i++) {
         const struct light_config_detail *detail = &light_config_details[i];
@@ -20,10 +21,13 @@ void sdvxhook2_valk_config_leds_init(struct cconfig *config)
             "The IO PWM channel you want to assign '%s' to",
             detail->led_name);
 
-        cconfig_util_set_int(
+        default_pin = detail->config_default;
+        cconfig_util_set_int_array(
             config,
             detail->config_key,
-            detail->config_default,
+            &default_pin,
+            1,
+            NULL,
             led_description);
     }
 }
@@ -33,17 +37,23 @@ void sdvxhook2_valk_config_leds_get(
 {
     for (int i = 0; i < lengthof(light_config_details); i++) {
         const struct light_config_detail *detail = &light_config_details[i];
+        int32_t default_pins[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
 
-        if (!cconfig_util_get_int(
+        default_pins[0] = detail->config_default;
+        for (int j = 1; j < lengthof(default_pins); j++) {
+            default_pins[j] = PIN_END;
+        }
+
+        if (!cconfig_util_get_int_array(
                 config,
                 detail->config_key,
-                (int *) (((char *) config_leds) + detail->offset),
-                detail->config_default)) {
+                (int32_t *) (((char *) config_leds) + detail->offset),
+                lengthof(default_pins),
+                default_pins,
+                NULL)) {
             log_warning(
-                "Invalid value for key '%s' specified, fallback "
-                "to default '%d'",
-                detail->config_key,
-                detail->config_default);
+                "Invalid value for key '%s' specified, fallback to defaults",
+                detail->config_key);
         }
     }
 }

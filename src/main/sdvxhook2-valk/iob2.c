@@ -456,21 +456,36 @@ static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
             rgb.b = 0;
         }
 
-        const struct light_config_detail *detail_r = &light_config_details[map->index_r];
-        int pin_r = *(int *) (((char *) valk_config_leds) + detail_r->offset);
-        if (pin_r != PIN_END) {
+        const struct light_config_detail *detail_r =
+            &light_config_details[map->index_r];
+        int *pins_r = (int *) (((char *) valk_config_leds) + detail_r->offset);
+        for (int i = 0; i < SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX; i++) {
+            int pin_r = pins_r[i];
+            if (pin_r == PIN_END) {
+                break;
+            }
             sdvx_io_set_pwm_light(pin_r, rgb.r);
         }
 
-        const struct light_config_detail *detail_g = &light_config_details[map->index_g];
-        int pin_g = *(int *) (((char *) valk_config_leds) + detail_g->offset);
-        if (pin_g != PIN_END) {
+        const struct light_config_detail *detail_g =
+            &light_config_details[map->index_g];
+        int *pins_g = (int *) (((char *) valk_config_leds) + detail_g->offset);
+        for (int i = 0; i < SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX; i++) {
+            int pin_g = pins_g[i];
+            if (pin_g == PIN_END) {
+                break;
+            }
             sdvx_io_set_pwm_light(pin_g, rgb.g);
         }
 
-        const struct light_config_detail *detail_b = &light_config_details[map->index_b];
-        int pin_b = *(int *) (((char *) valk_config_leds) + detail_b->offset);
-        if (pin_b != PIN_END) {
+        const struct light_config_detail *detail_b =
+            &light_config_details[map->index_b];
+        int *pins_b = (int *) (((char *) valk_config_leds) + detail_b->offset);
+        for (int i = 0; i < SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX; i++) {
+            int pin_b = pins_b[i];
+            if (pin_b == PIN_END) {
+                break;
+            }
             sdvx_io_set_pwm_light(pin_b, rgb.b);
         }
     }

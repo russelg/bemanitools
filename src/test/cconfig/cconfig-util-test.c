@@ -43,6 +43,108 @@ static void test_get_int_na()
     cconfig_finit(config);
 }
 
+static void test_set_get_int_array_default_delim()
+{
+    struct cconfig *config;
+    int32_t value[] = {1, 2, 3};
+    int32_t expected[] = {1, 2, 3, 6, 5};
+    int32_t defaults[] = {9, 8, 7, 6, 5};
+    int32_t result[5];
+
+    config = cconfig_init();
+
+    check_int_eq(config->nentries, 0);
+    check_null(config->entries);
+
+    cconfig_util_set_int_array(
+        config, "test", value, sizeof(value) / sizeof(value[0]), NULL, "desc");
+
+    check_int_eq(config->nentries, 1);
+    check_str_eq(config->entries[0].key, "test");
+    check_str_eq(config->entries[0].value, "1 2 3");
+    check_str_eq(config->entries[0].desc, "desc");
+
+    check_bool_true(cconfig_util_get_int_array(
+        config,
+        "test",
+        result,
+        sizeof(result) / sizeof(result[0]),
+        defaults,
+        NULL));
+    check_data_eq(result, sizeof(result), expected, sizeof(expected));
+
+    cconfig_finit(config);
+}
+
+static void test_set_get_int_array_custom_delim()
+{
+    struct cconfig *config;
+    int32_t value[] = {4, 5, 6};
+    int32_t result[3];
+    int32_t defaults[] = {9, 9, 9};
+
+    config = cconfig_init();
+
+    cconfig_util_set_int_array(
+        config, "test", value, sizeof(value) / sizeof(value[0]), "|", "desc");
+
+    check_int_eq(config->nentries, 1);
+    check_str_eq(config->entries[0].value, "4|5|6");
+
+    check_bool_true(cconfig_util_get_int_array(
+        config,
+        "test",
+        result,
+        sizeof(result) / sizeof(result[0]),
+        defaults,
+        "|"));
+    check_data_eq(result, sizeof(result), value, sizeof(value));
+
+    cconfig_finit(config);
+}
+
+static void test_get_int_array_na()
+{
+    struct cconfig *config;
+    int32_t result[3];
+    int32_t defaults[] = {1, 2, 3};
+
+    config = cconfig_init();
+
+    check_bool_false(cconfig_util_get_int_array(
+        config,
+        "test",
+        result,
+        sizeof(result) / sizeof(result[0]),
+        defaults,
+        NULL));
+    check_data_eq(result, sizeof(result), defaults, sizeof(defaults));
+
+    cconfig_finit(config);
+}
+
+static void test_get_int_array_invalid()
+{
+    struct cconfig *config;
+    int32_t result[3];
+    int32_t defaults[] = {7, 8, 9};
+
+    config = cconfig_init();
+
+    cconfig_set2(config, "test", "1 a 3");
+
+    check_bool_false(cconfig_util_get_int_array(
+        config,
+        "test",
+        result,
+        sizeof(result) / sizeof(result[0]),
+        defaults,
+        NULL));
+    check_data_eq(result, sizeof(result), defaults, sizeof(defaults));
+
+    cconfig_finit(config);
+}
+
 static void test_set_get_float()
 {
     struct cconfig *config;
@@ -209,6 +311,10 @@ static void test_get_data_na()
 TEST_MODULE_BEGIN("cconfig-util")
 TEST_MODULE_TEST(test_set_get_int)
 TEST_MODULE_TEST(test_get_int_na)
+TEST_MODULE_TEST(test_set_get_int_array_default_delim)
+TEST_MODULE_TEST(test_set_get_int_array_custom_delim)
+TEST_MODULE_TEST(test_get_int_array_na)
+TEST_MODULE_TEST(test_get_int_array_invalid)
 TEST_MODULE_TEST(test_set_get_float)
 TEST_MODULE_TEST(test_get_float_na)
 TEST_MODULE_TEST(test_set_get_bool)

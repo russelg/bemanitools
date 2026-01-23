@@ -1,10 +1,12 @@
 #ifndef SDVXHOOK2_VALK_CONFIG_LEDS_H
 #define SDVXHOOK2_VALK_CONFIG_LEDS_H
 
-#include <windows.h>
 #include <stdbool.h>
+#include <windows.h>
 
 #include "cconfig/cconfig.h"
+
+#define SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX 20
 
 enum tape_led_light {
     TITLE_AVG_R,
@@ -64,36 +66,36 @@ enum pwm_light {
 };
 
 struct sdvxhook2_valk_config_leds {
-    int title_avg_r_pin;
-    int title_avg_g_pin;
-    int title_avg_b_pin;
-    int upper_left_speaker_avg_r_pin;
-    int upper_left_speaker_avg_g_pin;
-    int upper_left_speaker_avg_b_pin;
-    int upper_right_speaker_avg_r_pin;
-    int upper_right_speaker_avg_g_pin;
-    int upper_right_speaker_avg_b_pin;
-    int left_wing_avg_r_pin;
-    int left_wing_avg_g_pin;
-    int left_wing_avg_b_pin;
-    int right_wing_avg_r_pin;
-    int right_wing_avg_g_pin;
-    int right_wing_avg_b_pin;
-    int lower_left_speaker_avg_r_pin;
-    int lower_left_speaker_avg_g_pin;
-    int lower_left_speaker_avg_b_pin;
-    int lower_right_speaker_avg_r_pin;
-    int lower_right_speaker_avg_g_pin;
-    int lower_right_speaker_avg_b_pin;
-    int control_panel_avg_r_pin;
-    int control_panel_avg_g_pin;
-    int control_panel_avg_b_pin;
-    int woofer_avg_r_pin;
-    int woofer_avg_g_pin;
-    int woofer_avg_b_pin;
-    int v_unit_avg_r_pin;
-    int v_unit_avg_g_pin;
-    int v_unit_avg_b_pin;
+    int title_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int title_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int title_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_left_speaker_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_left_speaker_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_left_speaker_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_right_speaker_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_right_speaker_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int upper_right_speaker_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int left_wing_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int left_wing_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int left_wing_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int right_wing_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int right_wing_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int right_wing_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_left_speaker_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_left_speaker_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_left_speaker_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_right_speaker_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_right_speaker_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int lower_right_speaker_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int control_panel_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int control_panel_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int control_panel_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int woofer_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int woofer_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int woofer_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int v_unit_avg_r_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int v_unit_avg_g_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
+    int v_unit_avg_b_pin[SDVXHOOK2_VALK_CONFIG_LEDS_PIN_MAX];
 };
 
 #define SDVXHOOK2_VALK_CONFIG_LEDS_TITLE_AVG_R_PIN_KEY "leds.title_avg_r_pin"
@@ -168,8 +170,8 @@ struct light_config_detail {
 
 // Due to a quirk of the IO, wing L/R cannot be set independently.
 // You should only assign one of the Left/Right to the up/low LEDs, otherwise
-// brightness can be weird. You can assign up to 3 pins per LED, just end the
-// list with -1. e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above
+// brightness can be weird. You can assign up to 20 pins per LED, just end the
+// list with -1. e.g. "0 1 2 -1". I wouldn't recommend this due to the above
 // issue. refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output
 static const struct light_config_detail light_config_details[] = {
     {TITLE_AVG_R,

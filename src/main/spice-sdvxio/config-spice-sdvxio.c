@@ -1,6 +1,7 @@
 #include "cconfig/cconfig-main.h"
 #include "cconfig/cconfig-util.h"
 
+#include "sdvxhook-util/config-leds.h"
 #include "spice-sdvxio/config-spice-sdvxio.h"
 
 #include "util/log.h"
@@ -181,13 +182,16 @@ static void spice_sdvxio_config_get(
     }
 }
 
-bool get_spice_sdvxio_config(struct spice_sdvxio_config *config_out)
+bool get_spice_sdvxio_config(
+    struct spice_sdvxio_config *config_out,
+    struct sdvxhook_config_leds *leds_out)
 {
     struct cconfig *config;
 
     config = cconfig_init();
 
     spice_sdvxio_config_init(config);
+    sdvxhook_config_leds_init(config);
 
     if (!cconfig_main_config_init(
             config,
@@ -202,6 +206,7 @@ bool get_spice_sdvxio_config(struct spice_sdvxio_config *config_out)
     }
 
     spice_sdvxio_config_get(config_out, config);
+    sdvxhook_config_leds_get(leds_out, config);
 
     cconfig_finit(config);
 

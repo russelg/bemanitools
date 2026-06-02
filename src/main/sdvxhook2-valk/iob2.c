@@ -31,7 +31,7 @@
 // we never instanciated IIDXIO ourselves, we assume that the original iidxhook9
 // does so
 #include "bemanitools/sdvxio.h"
-#include "sdvxhook2-valk/config-leds.h"
+#include "sdvxhook-util/config-leds.h"
 #include "sdvxhook2-valk/iob2.h"
 #include "sdvxhook2-valk/tapeled.h"
 
@@ -233,7 +233,7 @@ static struct AIO_NMGR *assigned_mgr;
 static struct AIO_NODE *assigned_node;
 static struct AIO_WRFIRM *assigned_fw_obj;
 
-static struct sdvxhook2_valk_config_leds *valk_config_leds;
+static struct sdvxhook_config_leds *valk_config_leds;
 
 static bool poll_delay;
 static bool force_headphones;
@@ -596,7 +596,7 @@ static unsigned int my_aioNodeMgr_Destroy(struct AIO_NMGR *mgr)
     return real_aioNodeMgr_Destroy(mgr);
 }
 
-void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val, struct sdvxhook2_valk_config_leds *config_leds)
+void aio_iob2_hook_init(bool disable_poll_limiter, bool force_headphones_val, struct sdvxhook_config_leds *config_leds)
 {
     poll_delay = !disable_poll_limiter;
     force_headphones = force_headphones_val;

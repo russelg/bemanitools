@@ -2,12 +2,12 @@
 
 #include "cconfig/cconfig-util.h"
 
-#include "sdvxhook2-valk/config-leds.h"
+#include "sdvxhook-util/config-leds.h"
 
 #include "util/log.h"
 #include "util/str.h"
 
-void sdvxhook2_valk_config_leds_init(struct cconfig *config)
+void sdvxhook_config_leds_init(struct cconfig *config)
 {
     char led_description[80];
 
@@ -28,8 +28,8 @@ void sdvxhook2_valk_config_leds_init(struct cconfig *config)
     }
 }
 
-void sdvxhook2_valk_config_leds_get(
-    struct sdvxhook2_valk_config_leds *config_leds, struct cconfig *config)
+void sdvxhook_config_leds_get(
+    struct sdvxhook_config_leds *config_leds, struct cconfig *config)
 {
     for (int i = 0; i < lengthof(light_config_details); i++) {
         const struct light_config_detail *detail = &light_config_details[i];

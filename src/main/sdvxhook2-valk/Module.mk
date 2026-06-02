@@ -28,4 +28,3 @@ src_sdvxhook2-valk := \
     iob2.c \
     tapeled.c \
     config-io.c \
-    config-leds.c

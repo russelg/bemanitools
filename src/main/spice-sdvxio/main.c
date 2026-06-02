@@ -9,6 +9,7 @@
 #include "util/log.h"
 #include "util/thread.h"
 
+#include "sdvxhook-util/config-leds.h"
 #include "spice-sdvxio/config-spice-sdvxio.h"
 #include "spice-sdvxio/responsive-analog-read.h"
 #include "spice-sdvxio/spice_wrappers.h"
@@ -60,7 +61,7 @@ struct light_map_gpio {
 
 struct light_map_rgb {
     const char *name;
-    int pwm_channels[4]; // Array of channels, -1 terminated
+    int pwm_channel;
 };
 
 static const struct light_map_gpio g_gpio_maps[] = {
@@ -74,65 +75,14 @@ static const struct light_map_gpio g_gpio_maps[] = {
     {"Generator B", SDVX_IO_OUT_GPIO_GENERATOR_B},
 };
 
-// due to a quirk of the IO, wing L/R cannot be set independently.
-// only assign one of the Left/Right to the up/low LEDs otherwise brightness can
-// be weird. you can assign up to 3 pins per LED, just end the list with -1.
-// e.g. {0, 1, 2, -1}. I wouldn't recommend this due to the above. refer to
-// src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output PINS:
-//  0: Wing Left Up R
-//  1: Wing Left Up G
-//  2: Wing Left Up B
-//  3: Wing Right Up R
-//  4: Wing Right Up G
-//  5: Wing Right Up B
-//  6: Wing Left Low R
-//  7: Wing Left Low G
-//  8: Wing Left Low B
-//  9: Wing Right Low R
-// 10: Wing Right Low G
-// 11: Wing Right Low B
-// 12: Woofer R
-// 13: Woofer G
-// 14: Woofer B
-// 15: Controller R
-// 16: Controller G
-// 17: Controller B
-// 18: Generator R
-// 19: Generator G
-static const struct light_map_rgb g_rgb_maps[] = {
-    {"Title Avg R", {-1}},
-    {"Title Avg G", {-1}},
-    {"Title Avg B", {-1}},
-    {"Upper Left Speaker Avg R", {-1}},
-    {"Upper Left Speaker Avg G", {-1}},
-    {"Upper Left Speaker Avg B", {-1}},
-    {"Upper Right Speaker Avg R", {-1}},
-    {"Upper Right Speaker Avg G", {-1}},
-    {"Upper Right Speaker Avg B", {-1}},
-    {"Left Wing Avg R", {0, -1}},
-    {"Left Wing Avg G", {1, -1}},
-    {"Left Wing Avg B", {2, -1}},
-    {"Right Wing Avg R", {-1}},
-    {"Right Wing Avg G", {-1}},
-    {"Right Wing Avg B", {-1}},
-    {"Lower Left Speaker Avg R", {-1}},
-    {"Lower Left Speaker Avg G", {-1}},
-    {"Lower Left Speaker Avg B", {-1}},
-    {"Lower Right Speaker Avg R", {-1}},
-    {"Lower Right Speaker Avg G", {-1}},
-    {"Lower Right Speaker Avg B", {-1}},
-    {"Control Panel Avg R", {15, -1}},
-    {"Control Panel Avg G", {16, -1}},
-    {"Control Panel Avg B", {17, -1}},
-    {"Woofer Avg R", {12, -1}},
-    {"Woofer Avg G", {13, -1}},
-    {"Woofer Avg B", {14, -1}},
-    {"V Unit Avg R", {6, /*9,*/ -1}},
-    {"V Unit Avg G", {7, /*10,*/ -1}},
-    {"V Unit Avg B", {8, /*11,*/ -1}},
-    {"Generator R", {18, -1}},
-    {"Generator G", {19, -1}},
+// Generator R/G are hardcoded PWM lights not in the shared LED config.
+// refer to src/main/sdvxio-bio2/sdvxio.c::sdvx_io_write_output for pin layout.
+static const struct light_map_rgb g_generator_rgb_maps[] = {
+    {"Generator R", GENERATOR_R},
+    {"Generator G", GENERATOR_G},
 };
+
+static struct sdvxhook_config_leds g_config_leds;
 
 bool check_key(uint16_t input, size_t idx_in)
 {
@@ -257,12 +207,13 @@ void handle_lights(struct spice_connection *connection, uint16_t *gpio_lights)
 {
     struct spice_light_state *light_states;
     size_t light_count;
+
     if (spice_lights_read(connection, &light_states, &light_count)) {
         for (size_t i = 0; i < light_count; i++) {
             struct spice_light_state *light = &light_states[i];
 
-            // Process GPIO Buttons
             size_t gpio_count = sizeof(g_gpio_maps) / sizeof(g_gpio_maps[0]);
+
             for (size_t j = 0; j < gpio_count; j++) {
                 if (!strcmp(light->name, g_gpio_maps[j].name)) {
                     *gpio_lights |=
@@ -270,18 +221,35 @@ void handle_lights(struct spice_connection *connection, uint16_t *gpio_lights)
                 }
             }
 
-            // Process RGB LEDs (supports multiple PWM pins per light)
-            size_t rgb_count = sizeof(g_rgb_maps) / sizeof(g_rgb_maps[0]);
-            for (size_t j = 0; j < rgb_count; j++) {
-                if (!strcmp(light->name, g_rgb_maps[j].name)) {
-                    uint8_t val = rescale_light_value(light->value);
-                    for (int k = 0; g_rgb_maps[j].pwm_channels[k] != -1; k++) {
+            size_t detail_count = lengthof(light_config_details);
+
+            for (size_t j = 0; j < detail_count; j++) {
+                const struct light_config_detail *detail =
+                    &light_config_details[j];
+
+                if (!strcmp(light->name, detail->led_name)) {
+                    int pin =
+                        *(int *) (((char *) &g_config_leds) + detail->offset);
+
+                    if (pin != PIN_END) {
                         sdvx_io_set_pwm_light(
-                            g_rgb_maps[j].pwm_channels[k], val);
+                            pin, rescale_light_value(light->value));
                     }
                 }
             }
+
+            size_t gen_count =
+                sizeof(g_generator_rgb_maps) / sizeof(g_generator_rgb_maps[0]);
+
+            for (size_t j = 0; j < gen_count; j++) {
+                if (!strcmp(light->name, g_generator_rgb_maps[j].name)) {
+                    sdvx_io_set_pwm_light(
+                        g_generator_rgb_maps[j].pwm_channel,
+                        rescale_light_value(light->value));
+                }
+            }
         }
+
         spice_lights_free(light_states, light_count);
     }
 }
@@ -340,7 +308,8 @@ int main(int argc, char **argv)
     log_to_writer(log_writer_stdout, NULL);
 
     struct spice_sdvxio_config config;
-    if (!get_spice_sdvxio_config(&config)) {
+
+    if (!get_spice_sdvxio_config(&config, &g_config_leds)) {
         exit(EXIT_FAILURE);
     }
 

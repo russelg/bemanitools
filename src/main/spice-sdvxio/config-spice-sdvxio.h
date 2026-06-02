@@ -5,6 +5,8 @@
 
 #include "cconfig/cconfig.h"
 
+#include "sdvxhook-util/config-leds.h"
+
 struct spice_sdvxio_config {
     bool enable_keylight;
     bool service_coin;
@@ -16,6 +18,8 @@ struct spice_sdvxio_config {
     float analog_snap_multiplier;
 };
 
-bool get_spice_sdvxio_config(struct spice_sdvxio_config *config_out);
+bool get_spice_sdvxio_config(
+    struct spice_sdvxio_config *config_out,
+    struct sdvxhook_config_leds *leds_out);
 
 #endif

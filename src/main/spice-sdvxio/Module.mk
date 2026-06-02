@@ -9,6 +9,7 @@ ldflags_spice-sdvxio  := \
 
 libs_spice-sdvxio     := \
     cconfig \
+    sdvxhook-util \
     sdvxio \
     util \
 

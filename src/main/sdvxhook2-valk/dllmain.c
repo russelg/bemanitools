@@ -22,7 +22,7 @@
 #include "sdvxhook-util/nvapi.h"
 #include "sdvxhook-util/power.h"
 #include "sdvxhook2-valk/config-io.h"
-#include "sdvxhook2-valk/config-leds.h"
+#include "sdvxhook-util/config-leds.h"
 #include "sdvxhook2-valk/iob2.h"
 #include "sdvxhook2-valk/tapeled.h"
 
@@ -45,7 +45,7 @@
     "Usage: launcher.exe -K sdvxhook2-valk.dll <soundvoltex.dll> [options...]"
 
 struct sdvxhook2_valk_config_io config_io;
-struct sdvxhook2_valk_config_leds config_leds;
+struct sdvxhook_config_leds config_leds;
 struct camhook_config_cam config_cam;
 struct d3d9exhook_config_gfx config_gfx;
 struct hooklib_config_adapter config_adapter;
@@ -77,7 +77,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     d3d9exhook_config_gfx_init(config);
     camhook_config_cam_init(config, 1, false);
     hooklib_config_adapter_init(config);
-    sdvxhook2_valk_config_leds_init(config);
+    sdvxhook_config_leds_init(config);
 
     if (!cconfig_hook_config_init(
             config,
@@ -91,7 +91,7 @@ static bool my_dll_entry_init(char *sidcode, struct property_node *param)
     camhook_config_cam_get(&config_cam, config, 1, false);
     d3d9exhook_config_gfx_get(&config_gfx, config);
     hooklib_config_adapter_get(&config_adapter, config);
-    sdvxhook2_valk_config_leds_get(&config_leds, config);
+    sdvxhook_config_leds_get(&config_leds, config);
 
     cconfig_finit(config);
 

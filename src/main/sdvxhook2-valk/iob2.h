@@ -1,5 +1,5 @@
-#ifndef IIDXHOOK9_AIO_IOB2_H
-#define IIDXHOOK9_AIO_IOB2_H
+#ifndef SDVXHOOK2_VALK_IOB2_H
+#define SDVXHOOK2_VALK_IOB2_H
 
 #include "sdvxhook2-valk/config-leds.h"
 

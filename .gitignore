@@ -5,3 +5,5 @@ build/
 .vs
 version
 .DS_Store
+.direnv
+.envrc

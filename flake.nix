@@ -20,6 +20,10 @@
         mingwW64 = pkgs.pkgsCross.mingwW64.stdenv.cc;
         mingw32 = pkgs.pkgsCross.mingw32.stdenv.cc;
 
+        # MCF threading runtime required by GCC 15+ (--enable-threads=mcf)
+        mcfgthreads32 = pkgs.pkgsCross.mingw32.windows.mcfgthreads;
+        mcfgthreads64 = pkgs.pkgsCross.mingwW64.windows.mcfgthreads;
+
       in
       {
         devShells.default = pkgs.mkShell {
@@ -35,7 +39,9 @@
             mingwW64
             mingw32
             pkgs.pkgsCross.mingwW64.windows.pthreads # Common dependency for bemanitools
-            
+            mcfgthreads32
+            mcfgthreads64
+
             # Python environment for mdformat
             pythonEnv
 
@@ -46,10 +52,14 @@
           shellHook = ''
             echo "--- Bemanitools Dev Environment ---"
             echo "Toolchains available: i686-w64-mingw32- and x86_64-w64-mingw32-"
-            
+
             # Ensure the toolchain prefixes match what the GNUmakefile expects
             export CROSS_COMPILE_32=i686-w64-mingw32-
             export CROSS_COMPILE_64=x86_64-w64-mingw32-
+
+            # GCC 15+ uses MCF threads; expose libmcfgthread to both cross-linkers
+            export NIX_LDFLAGS_i686_w64_mingw32="-L${mcfgthreads32}/lib -lmcfgthread"
+            export NIX_LDFLAGS_x86_64_w64_mingw32="-L${mcfgthreads64}/lib -lmcfgthread"
           '';
         };
       });

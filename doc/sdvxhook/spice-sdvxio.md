@@ -42,7 +42,7 @@ You can use the following for your `gamestart.bat`:
 
 ```batch
 start spice-sdvxio.exe
-spice2x.exe -reader COM2 -api 1337 -apipass password
+spice64.exe -reader COM2 -api 1337 -apipass password
 ```
 
 # Notes

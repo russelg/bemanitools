@@ -63,37 +63,39 @@ enum pwm_light {
     GENERATOR_G,
 };
 
+#define SDVXHOOK_CONFIG_LEDS_MAX_PINS 20
+
 struct sdvxhook_config_leds {
-    int title_avg_r_pin;
-    int title_avg_g_pin;
-    int title_avg_b_pin;
-    int upper_left_speaker_avg_r_pin;
-    int upper_left_speaker_avg_g_pin;
-    int upper_left_speaker_avg_b_pin;
-    int upper_right_speaker_avg_r_pin;
-    int upper_right_speaker_avg_g_pin;
-    int upper_right_speaker_avg_b_pin;
-    int left_wing_avg_r_pin;
-    int left_wing_avg_g_pin;
-    int left_wing_avg_b_pin;
-    int right_wing_avg_r_pin;
-    int right_wing_avg_g_pin;
-    int right_wing_avg_b_pin;
-    int lower_left_speaker_avg_r_pin;
-    int lower_left_speaker_avg_g_pin;
-    int lower_left_speaker_avg_b_pin;
-    int lower_right_speaker_avg_r_pin;
-    int lower_right_speaker_avg_g_pin;
-    int lower_right_speaker_avg_b_pin;
-    int control_panel_avg_r_pin;
-    int control_panel_avg_g_pin;
-    int control_panel_avg_b_pin;
-    int woofer_avg_r_pin;
-    int woofer_avg_g_pin;
-    int woofer_avg_b_pin;
-    int v_unit_avg_r_pin;
-    int v_unit_avg_g_pin;
-    int v_unit_avg_b_pin;
+    int title_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int title_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int title_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_left_speaker_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_left_speaker_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_left_speaker_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_right_speaker_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_right_speaker_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int upper_right_speaker_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int left_wing_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int left_wing_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int left_wing_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int right_wing_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int right_wing_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int right_wing_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_left_speaker_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_left_speaker_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_left_speaker_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_right_speaker_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_right_speaker_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int lower_right_speaker_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int control_panel_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int control_panel_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int control_panel_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int woofer_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int woofer_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int woofer_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int v_unit_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int v_unit_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int v_unit_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
 };
 
 #define SDVXHOOK_CONFIG_LEDS_TITLE_AVG_R_PIN_KEY "leds.title_avg_r_pin"

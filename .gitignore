@@ -7,3 +7,4 @@ version
 .DS_Store
 .direnv
 .envrc
+compile_commands.json

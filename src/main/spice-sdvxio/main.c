@@ -228,12 +228,12 @@ void handle_lights(struct spice_connection *connection, uint16_t *gpio_lights)
                     &light_config_details[j];
 
                 if (!strcmp(light->name, detail->led_name)) {
-                    int pin =
-                        *(int *) (((char *) &g_config_leds) + detail->offset);
+                    int *pins =
+                        (int *) (((char *) &g_config_leds) + detail->offset);
 
-                    if (pin != PIN_END) {
+                    for (int k = 0; k < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins[k] != PIN_END; k++) {
                         sdvx_io_set_pwm_light(
-                            pin, rescale_light_value(light->value));
+                            pins[k], rescale_light_value(light->value));
                     }
                 }
             }

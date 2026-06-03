@@ -457,21 +457,24 @@ static void my_SetTapeLedData(void *this, unsigned int index, const void *data)
         }
 
         const struct light_config_detail *detail_r = &light_config_details[map->index_r];
-        int pin_r = *(int *) (((char *) valk_config_leds) + detail_r->offset);
-        if (pin_r != PIN_END) {
-            sdvx_io_set_pwm_light(pin_r, rgb.r);
+        int *pins_r = (int *) (((char *) valk_config_leds) + detail_r->offset);
+
+        for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_r[j] != PIN_END; j++) {
+            sdvx_io_set_pwm_light(pins_r[j], rgb.r);
         }
 
         const struct light_config_detail *detail_g = &light_config_details[map->index_g];
-        int pin_g = *(int *) (((char *) valk_config_leds) + detail_g->offset);
-        if (pin_g != PIN_END) {
-            sdvx_io_set_pwm_light(pin_g, rgb.g);
+        int *pins_g = (int *) (((char *) valk_config_leds) + detail_g->offset);
+
+        for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_g[j] != PIN_END; j++) {
+            sdvx_io_set_pwm_light(pins_g[j], rgb.g);
         }
 
         const struct light_config_detail *detail_b = &light_config_details[map->index_b];
-        int pin_b = *(int *) (((char *) valk_config_leds) + detail_b->offset);
-        if (pin_b != PIN_END) {
-            sdvx_io_set_pwm_light(pin_b, rgb.b);
+        int *pins_b = (int *) (((char *) valk_config_leds) + detail_b->offset);
+
+        for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_b[j] != PIN_END; j++) {
+            sdvx_io_set_pwm_light(pins_b[j], rgb.b);
         }
     }
 }

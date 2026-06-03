@@ -206,6 +206,93 @@ static void test_get_data_na()
     cconfig_finit(config);
 }
 
+static void test_set_get_int_array()
+{
+    struct cconfig *config;
+    int32_t values[] = {1, 2, 3};
+    int32_t result[10];
+    int32_t defaults[] = {0};
+
+    config = cconfig_init();
+
+    check_int_eq(config->nentries, 0);
+    check_null(config->entries);
+
+    cconfig_util_set_int_array(config, "test", values, 3, " ", "desc");
+
+    check_int_eq(config->nentries, 1);
+    check_str_eq(config->entries[0].key, "test");
+    check_str_eq(config->entries[0].value, "1 2 3");
+    check_str_eq(config->entries[0].desc, "desc");
+
+    check_bool_true(
+        cconfig_util_get_int_array(config, "test", result, 10, defaults, 1, " "));
+    check_int_eq(result[0], 1);
+    check_int_eq(result[1], 2);
+    check_int_eq(result[2], 3);
+    check_int_eq(result[3], -1);
+
+    cconfig_finit(config);
+}
+
+static void test_get_int_array_na()
+{
+    struct cconfig *config;
+    int32_t result[5];
+    int32_t defaults[] = {7, 8};
+
+    config = cconfig_init();
+
+    check_int_eq(config->nentries, 0);
+    check_null(config->entries);
+
+    check_bool_false(
+        cconfig_util_get_int_array(config, "test", result, 5, defaults, 2, " "));
+    check_int_eq(result[0], 7);
+    check_int_eq(result[1], 8);
+    check_int_eq(result[2], -1);
+
+    cconfig_finit(config);
+}
+
+static void test_get_int_array_single()
+{
+    struct cconfig *config;
+    int32_t result[5];
+    int32_t defaults[] = {0};
+
+    config = cconfig_init();
+
+    cconfig_util_set_str(config, "test", "5", "desc");
+
+    check_bool_true(
+        cconfig_util_get_int_array(config, "test", result, 5, defaults, 1, " \t"));
+    check_int_eq(result[0], 5);
+    check_int_eq(result[1], -1);
+
+    cconfig_finit(config);
+}
+
+static void test_get_int_array_tab_delim()
+{
+    struct cconfig *config;
+    int32_t result[5];
+    int32_t defaults[] = {0};
+
+    config = cconfig_init();
+
+    cconfig_util_set_str(config, "test", "10\t20\t30", "desc");
+
+    check_bool_true(
+        cconfig_util_get_int_array(config, "test", result, 5, defaults, 1, " \t"));
+    check_int_eq(result[0], 10);
+    check_int_eq(result[1], 20);
+    check_int_eq(result[2], 30);
+    check_int_eq(result[3], -1);
+
+    cconfig_finit(config);
+}
+
 TEST_MODULE_BEGIN("cconfig-util")
 TEST_MODULE_TEST(test_set_get_int)
 TEST_MODULE_TEST(test_get_int_na)
@@ -217,4 +304,8 @@ TEST_MODULE_TEST(test_set_get_str)
 TEST_MODULE_TEST(test_get_str_na)
 TEST_MODULE_TEST(test_set_get_data)
 TEST_MODULE_TEST(test_get_data_na)
+TEST_MODULE_TEST(test_set_get_int_array)
+TEST_MODULE_TEST(test_get_int_array_na)
+TEST_MODULE_TEST(test_get_int_array_single)
+TEST_MODULE_TEST(test_get_int_array_tab_delim)
 TEST_MODULE_END()

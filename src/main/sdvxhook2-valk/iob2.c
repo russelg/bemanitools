@@ -343,9 +343,30 @@ static void my_AddCounter(void *this, int side_0, char count)
 {
     // nothing
 }
-static void my_SetIccrLed(void *this, unsigned int rgb)
+static void my_SetIccrLed(void *this, uint32_t color)
 {
     // nothing
+    uint32_t col_r = (color & 0xFF0000) >> 16;
+    uint32_t col_g = (color & 0x00FF00) >> 8;
+    uint32_t col_b = (color & 0x0000FF) >> 0;
+
+    const struct light_config_detail *detail_r = &light_config_details[IC_CARD_READER_R];
+    int *pins_r = (int *) (((char *) valk_config_leds) + detail_r->offset);
+    for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_r[j] != PIN_END; j++) {
+        sdvx_io_set_pwm_light(pins_r[j], col_r);
+    }
+
+    const struct light_config_detail *detail_g = &light_config_details[IC_CARD_READER_G];
+    int *pins_g = (int *) (((char *) valk_config_leds) + detail_g->offset);
+    for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_g[j] != PIN_END; j++) {
+        sdvx_io_set_pwm_light(pins_g[j], col_g);
+    }
+
+    const struct light_config_detail *detail_b = &light_config_details[IC_CARD_READER_B];
+    int *pins_b = (int *) (((char *) valk_config_leds) + detail_b->offset);
+    for (int j = 0; j < SDVXHOOK_CONFIG_LEDS_MAX_PINS && pins_b[j] != PIN_END; j++) {
+        sdvx_io_set_pwm_light(pins_b[j], col_b);
+    }
 }
 
 uint16_t assign_gpio(bool active, size_t gpio_out)

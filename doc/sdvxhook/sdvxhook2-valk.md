@@ -104,6 +104,8 @@ io.disable_nvapi_hooks=true
 # 18: Generator R
 # 19: Generator G
 # -1 to not assign a pin. This is the default so you can omit those lines.
+# You can bind multiple pins to an output e.g:
+#   leds.left_wing_avg_r_pin=0 6
 # Using a BIO2, Wing L/R cannot be set independently, only Upper and Lower.
 # Can have weird appearance (dim) if assigning to both L/R, if so try only assigning one side.
 leds.left_wing_avg_r_pin=0
@@ -136,10 +138,13 @@ leds.lower_left_speaker_avg_b_pin=-1
 leds.lower_right_speaker_avg_r_pin=-1
 leds.lower_right_speaker_avg_g_pin=-1
 leds.lower_right_speaker_avg_b_pin=-1
+leds.ic_card_reader_r_pin=-1
+leds.ic_card_reader_g_pin=-1
+leds.ic_card_reader_b_pin=-1
 ```
 
 The BI2X does not initialize the speaker amps, so `sdvxio-bio2.dll` is responsible for doing so.
-The default volume is set to 48, which may be quiet on some setups. 
+**The default volume is set to 48, which will likely be quiet on some setups.** 
 
 This can be changed in `sdvxio-bio2.conf`, this file will be created once you launch the game. 
 Here's a sample `sdvxio-bio2.conf` for a typical Nemsys setup.
@@ -149,7 +154,8 @@ Here's a sample `sdvxio-bio2.conf` for a typical Nemsys setup.
 bio2.initialize_amps=true
 
 # Digital amp volume (0-96) 0 is high, 96 is low.
-bio2.amp_volume=48
+# Changed to 0 so you can actually hear the game.
+bio2.amp_volume=0
 ```
 
 

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>spice2x LED Viewer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #111;
+      color: #eee;
+      font-family: monospace;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 1rem;
+      margin-bottom: 14px;
+      color: #666;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .connection-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .connection-bar label {
+      font-size: 0.7rem;
+      color: #666;
+    }
+
+    .connection-bar input {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      color: #ddd;
+      padding: 5px 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .connection-bar input:focus { border-color: #555; }
+    .connection-bar input[id="inp-host"]     { width: 150px; }
+    .connection-bar input[id="inp-port"]     { width: 70px; }
+    .connection-bar input[id="inp-password"] { width: 130px; }
+
+    button {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #ccc;
+      padding: 5px 16px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 3px;
+      letter-spacing: 1px;
+    }
+
+    button:hover { background: #333; border-color: #555; }
+    button:active { background: #1a1a1a; }
+
+    .status {
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 10px;
+      background: #1e1e1e;
+      color: #555;
+      border: 1px solid #2a2a2a;
+    }
+
+    .status.connected  { background: #0d2410; color: #4caf50; border-color: #1a4a1a; }
+    .status.connecting { background: #2a2510; color: #ffc107; border-color: #4a4010; }
+    .status.error      { background: #2a1010; color: #f44336; border-color: #4a1a1a; }
+
+    .main-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .cabinet-view {
+      position: relative;
+      width: 210px;
+      flex-shrink: 0;
+    }
+
+    #valk-view { width: 251px; }
+
+    .cabinet-view img {
+      width: 100%;
+      display: block;
+    }
+
+    .cabinet-view svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      mix-blend-mode: screen;
+    }
+
+    .cabinet-view svg [data-tooltip] {
+      cursor: default;
+      stroke: rgba(255,0,0,0.5);
+      stroke-width: 2;
+    }
+
+    #led-tooltip {
+      position: fixed;
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 4px 9px;
+      font-family: monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.08s;
+      z-index: 100;
+    }
+
+    #led-tooltip.visible { opacity: 1; }
+
+    .cabinet {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+      max-width: 720px;
+    }
+
+    .led-cell {
+      border-radius: 6px;
+      padding: 14px 10px;
+      background: #1a1a1a;
+      border: 1px solid #252525;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 90px;
+      transition: background-color 0.04s linear;
+      position: relative;
+    }
+
+    .led-cell .label {
+      font-size: 0.6rem;
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 5px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .led-cell .hex-val {
+      font-size: 0.7rem;
+      font-family: monospace;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    }
+
+    .cell-ul-speaker { grid-column: 1; grid-row: 1; }
+    .cell-title      { grid-column: 2 / 4; grid-row: 1; min-height: 60px; }
+    .cell-ur-speaker { grid-column: 4; grid-row: 1; }
+    .cell-l-wing     { grid-column: 1; grid-row: 2 / 4; }
+    .cell-ctrl-panel { grid-column: 2; grid-row: 2; }
+    .cell-ic-reader  { grid-column: 3; grid-row: 2; }
+    .cell-r-wing     { grid-column: 4; grid-row: 2 / 4; }
+    .cell-woofer     { grid-column: 2 / 4; grid-row: 3; min-height: 60px; justify-self: center; width: 55%; }
+    .cell-ll-speaker { grid-column: 1; grid-row: 4; }
+    .cell-v-unit     { grid-column: 2 / 4; grid-row: 4; }
+    .cell-lr-speaker { grid-column: 4; grid-row: 4; }
+
+    .cabinet-nemsys {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      max-width: 360px;
+    }
+
+    .cell-nemsys-wing-ul   { grid-column: 1; grid-row: 1; }
+    .cell-nemsys-wing-ur   { grid-column: 2; grid-row: 1; }
+    .cell-nemsys-wing-ll   { grid-column: 1; grid-row: 2; }
+    .cell-nemsys-wing-lr   { grid-column: 2; grid-row: 2; }
+    .cell-nemsys-woofer    { grid-column: 1 / 3; grid-row: 3; justify-self: center; width: 55%; min-height: 60px; }
+    .cell-nemsys-ctrl-panel { grid-column: 1 / 3; grid-row: 4; min-height: 60px; }
+
+    /* ── Pin Mapping Section ── */
+
+    .pin-mapping {
+      margin-top: 32px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pin-mapping-title {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 14px;
+      font-weight: normal;
+      text-align: center;
+    }
+
+    .pin-mapping-table-wrap {
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .pin-mapping-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    .pin-mapping-table th,
+    .pin-mapping-table td {
+      border: 1px solid #252525;
+      padding: 6px 10px;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .pin-mapping-table th.zone-col-header,
+    .pin-mapping-table td.zone-label {
+      text-align: left;
+      min-width: 150px;
+      color: #aaa;
+    }
+
+    .pin-mapping-table thead th {
+      background: #161616;
+      color: #777;
+      font-size: 0.65rem;
+    }
+
+    .pin-mapping-table thead th .pin-range {
+      display: block;
+      color: #444;
+      font-size: 0.6rem;
+      margin-top: 2px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .pin-mapping-table tbody tr:nth-child(even) {
+      background: #141414;
+    }
+
+    .pin-mapping-table tbody tr:hover {
+      background: #1c1c1c;
+    }
+
+    .pin-mapping-table td:not(.zone-label) label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .pin-mapping-table input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: #4caf50;
+      cursor: pointer;
+    }
+
+    .config-output {
+      margin-top: 4px;
+    }
+
+    .config-output-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .config-output-label {
+      font-size: 0.65rem;
+      color: #555;
+    }
+
+    #config-output-text {
+      width: 100%;
+      min-height: 80px;
+      max-height: 300px;
+      background: #161616;
+      border: 1px solid #252525;
+      color: #88cc88;
+      font-family: monospace;
+      font-size: 0.8rem;
+      padding: 10px 12px;
+      border-radius: 3px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    #config-output-text:focus {
+      border-color: #333;
+    }
+
+    .page {
+      width: fit-content;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+  <h1>spice2x LED Viewer</h1>
+
+  <div class="connection-bar">
+    <label>Host</label>
+    <input type="text"     id="inp-host"     value="localhost">
+    <label>Port</label>
+    <input type="number"   id="inp-port"     value="1338">
+    <label>Password</label>
+    <input type="password" id="inp-password" placeholder="(optional)">
+    <button id="btn-connect">Connect</button>
+    <span class="status" id="status">Disconnected</span>
+  </div>
+
+  <div class="main-layout">
+
+  <div class="cabinet">
+    <div class="led-cell cell-ul-speaker" id="cell-ul-speaker">
+      <div class="label">Upper Left<br>Speaker</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-title"      id="cell-title">
+      <div class="label">Title</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-ur-speaker" id="cell-ur-speaker">
+      <div class="label">Upper Right<br>Speaker</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-l-wing"     id="cell-l-wing">
+      <div class="label">Left Wing</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-ctrl-panel" id="cell-ctrl-panel">
+      <div class="label">Control<br>Panel</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-ic-reader"  id="cell-ic-reader">
+      <div class="label">IC Card<br>Reader</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-r-wing"     id="cell-r-wing">
+      <div class="label">Right Wing</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-ll-speaker" id="cell-ll-speaker">
+      <div class="label">Lower Left<br>Speaker</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-v-unit"     id="cell-v-unit">
+      <div class="label">V Unit</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-lr-speaker" id="cell-lr-speaker">
+      <div class="label">Lower Right<br>Speaker</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-woofer"     id="cell-woofer">
+      <div class="label">Woofer</div>
+      <div class="hex-val">#000000</div>
+    </div>
+  </div>
+
+  <div class="cabinet-view" id="valk-view">
+    <img src="cabinet.png" alt="SDVX Valkyrie cabinet">
+    <svg viewBox="0 0 484 964" xmlns="http://www.w3.org/2000/svg">
+      <rect    id="svg-title"       data-tooltip="Title"               x="95"  y="48"  width="295" height="88"  fill="#000" fill-opacity="0.95"></rect>
+      <circle  id="svg-ul-speaker"  data-tooltip="Upper Left Speaker"  cx="68"  cy="112" r="33"                fill="#000" fill-opacity="0.95"></circle>
+      <circle  id="svg-ur-speaker"  data-tooltip="Upper Right Speaker" cx="416" cy="112" r="33"                fill="#000" fill-opacity="0.95"></circle>
+      <polygon id="svg-l-wing"      data-tooltip="Left Wing"           points="18,168 116,192 148,468 52,468"  fill="#000" fill-opacity="0.95"></polygon>
+      <polygon id="svg-r-wing"      data-tooltip="Right Wing"          points="466,168 368,192 336,468 432,468" fill="#000" fill-opacity="0.95"></polygon>
+      <circle  id="svg-ll-speaker"  data-tooltip="Lower Left Speaker"  cx="78"  cy="531" r="30"                fill="#000" fill-opacity="0.95"></circle>
+      <circle  id="svg-lr-speaker"  data-tooltip="Lower Right Speaker" cx="406" cy="526" r="30"                fill="#000" fill-opacity="0.95"></circle>
+      <rect    id="svg-ic-reader"   data-tooltip="IC Card Reader"      x="143" y="546" width="198" height="22" fill="#000" fill-opacity="0.95"></rect>
+      <rect    id="svg-ctrl-panel"  data-tooltip="Control Panel"       x="45"  y="571" width="394" height="56" fill="#000" fill-opacity="0.95"></rect>
+      <polygon id="svg-v-unit-l"    data-tooltip="V Unit"              points="118,672 224,672 224,890 150,890" fill="#000" fill-opacity="0.95"></polygon>
+      <polygon id="svg-v-unit-r"    data-tooltip="V Unit"              points="260,674 366,674 334,888 260,888" fill="#000" fill-opacity="0.95"></polygon>
+      <circle  id="svg-woofer"      data-tooltip="Woofer"              cx="242" cy="725" r="48"               fill="#000" fill-opacity="0.95"></circle>
+    </svg>
+  </div>
+
+  <div class="cabinet-view">
+    <img src="nemsys.jpg" alt="SDVX Nemsys cabinet">
+    <svg viewBox="0 0 529 1260" xmlns="http://www.w3.org/2000/svg">
+      <polygon id="svg-nemsys-wing-ul"    data-tooltip="Wing Upper Left"  points="0,88 152,83 162,453 0,468"   fill="#000" fill-opacity="0.95"></polygon>
+      <polygon id="svg-nemsys-wing-ur"    data-tooltip="Wing Upper Right" points="529,88 377,83 367,453 529,468" fill="#000" fill-opacity="0.95"></polygon>
+      <polygon id="svg-nemsys-wing-ll"    data-tooltip="Wing Lower Left"  points="0,472 165,458 168,665 0,678"  fill="#000" fill-opacity="0.95"></polygon>
+      <polygon id="svg-nemsys-wing-lr"    data-tooltip="Wing Lower Right" points="529,472 364,458 361,665 529,678" fill="#000" fill-opacity="0.95"></polygon>
+      <rect    id="svg-nemsys-woofer"     data-tooltip="Woofer"           x="140" y="703" width="249" height="70"  fill="#000" fill-opacity="0.95"></rect>
+      <rect    id="svg-nemsys-ctrl-panel" data-tooltip="Controller"       x="53"  y="773" width="423" height="230" fill="#000" fill-opacity="0.95"></rect>
+    </svg>
+  </div>
+
+  <div id="led-tooltip"></div>
+
+  <div class="cabinet-nemsys">
+    <div class="led-cell cell-nemsys-wing-ul" id="cell-nemsys-wing-ul">
+      <div class="label">Wing<br>Upper Left</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-nemsys-wing-ur" id="cell-nemsys-wing-ur">
+      <div class="label">Wing<br>Upper Right</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-nemsys-wing-ll" id="cell-nemsys-wing-ll">
+      <div class="label">Wing<br>Lower Left</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-nemsys-wing-lr" id="cell-nemsys-wing-lr">
+      <div class="label">Wing<br>Lower Right</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-nemsys-woofer" id="cell-nemsys-woofer">
+      <div class="label">Woofer</div>
+      <div class="hex-val">#000000</div>
+    </div>
+    <div class="led-cell cell-nemsys-ctrl-panel" id="cell-nemsys-ctrl-panel">
+      <div class="label">Controller</div>
+      <div class="hex-val">#000000</div>
+    </div>
+  </div>
+
+  </div><!-- end .main-layout -->
+
+  <section class="pin-mapping">
+    <h2 class="pin-mapping-title">LED Pin Mapping <button id="btn-clear-mapping">Clear</button></h2>
+    <div class="pin-mapping-table-wrap">
+      <table class="pin-mapping-table" id="pin-mapping-table">
+        <thead><tr><th class="zone-col-header">Zone</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="config-output">
+      <div class="config-output-header">
+        <span class="config-output-label">spice2x config snippet</span>
+        <button id="btn-copy-config">Copy</button>
+      </div>
+      <textarea id="config-output-text" readonly spellcheck="false"
+                placeholder="(no zones mapped)"></textarea>
+    </div>
+  </section>
+
+
+  <script>
+    class RC4 {
+      constructor(key) {
+        this.s = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) this.s[i] = i;
+        let j = 0;
+        for (let i = 0; i < 256; i++) {
+          j = (j + this.s[i] + key[i % key.length]) & 0xff;
+          const t = this.s[i]; this.s[i] = this.s[j]; this.s[j] = t;
+        }
+        this.i = 0;
+        this.j = 0;
+      }
+
+      crypt(buf) {
+        for (let k = 0; k < buf.length; k++) {
+          this.i = (this.i + 1) & 0xff;
+          this.j = (this.j + this.s[this.i]) & 0xff;
+          const t = this.s[this.i]; this.s[this.i] = this.s[this.j]; this.s[this.j] = t;
+          buf[k] ^= this.s[(this.s[this.i] + this.s[this.j]) & 0xff];
+        }
+      }
+    }
+
+    class SpiceConnection {
+      constructor(host, port, password, onOpen, onClose, onError) {
+        this.onOpen  = onOpen;
+        this.onClose = onClose;
+        this.onError = onError;
+        this.nextId   = 0;
+        this.pending  = new Map();
+        this.rxBuf    = new Uint8Array(0);
+        this.closed   = false;
+        this.hadError = false;
+
+        if (password) {
+          this.rc4 = new RC4(new TextEncoder().encode(password));
+        }
+
+        this.ws = new WebSocket(`ws://${host}:${port}`);
+        this.ws.binaryType = 'arraybuffer';
+        this.ws.onopen    = () => onOpen();
+        this.ws.onclose   = () => { this.closed = true; this._rejectAll(); onClose(this.hadError); };
+        this.ws.onerror   = () => { this.hadError = true; };
+        this.ws.onmessage = (e) => this._onMessage(e);
+      }
+
+      _onMessage(e) {
+        const incoming = new Uint8Array(e.data);
+
+        if (this.rc4) this.rc4.crypt(incoming);
+
+        const combined = new Uint8Array(this.rxBuf.length + incoming.length);
+        combined.set(this.rxBuf);
+        combined.set(incoming, this.rxBuf.length);
+        this.rxBuf = combined;
+
+        while (true) {
+          const nullIdx = this.rxBuf.indexOf(0);
+          if (nullIdx === -1) break;
+
+          const frame = this.rxBuf.slice(0, nullIdx);
+          this.rxBuf = this.rxBuf.slice(nullIdx + 1);
+
+          try {
+            const msg = JSON.parse(new TextDecoder().decode(frame));
+            const handler = this.pending.get(msg.id);
+            if (handler) {
+              this.pending.delete(msg.id);
+              handler.resolve(msg);
+            }
+          } catch (err) {
+            console.error('spice parse error:', err);
+          }
+        }
+      }
+
+      _rejectAll() {
+        for (const [, h] of this.pending) h.reject(new Error('disconnected'));
+        this.pending.clear();
+      }
+
+      request(module, fn, params) {
+        return new Promise((resolve, reject) => {
+          if (this.closed) { reject(new Error('connection closed')); return; }
+
+          const id = this.nextId++ & 0xffffffff;
+          const timer = setTimeout(() => {
+            if (this.pending.has(id)) {
+              this.pending.delete(id);
+              reject(new Error('request timeout'));
+            }
+          }, 2000);
+
+          this.pending.set(id, {
+            resolve: (v) => { clearTimeout(timer); resolve(v); },
+            reject:  (e) => { clearTimeout(timer); reject(e); },
+          });
+
+          const msgBytes = new TextEncoder().encode(
+            JSON.stringify({ id, module, 'function': fn, params })
+          );
+          const frame = new Uint8Array(msgBytes.length + 1);
+          frame.set(msgBytes);
+          frame[msgBytes.length] = 0;
+          if (this.rc4) this.rc4.crypt(frame);
+          this.ws.send(frame);
+        });
+      }
+
+      async lightsRead() {
+        const resp = await this.request('lights', 'read', []);
+        const map = new Map();
+        if (resp.data) {
+          for (const entry of resp.data) map.set(entry[0], entry[1]);
+        }
+        return map;
+      }
+
+      close() {
+        this.closed = true;
+        this.ws.close();
+      }
+    }
+
+    const LED_GROUPS = [
+      { id: 'title',       r: 'Title Avg R',               g: 'Title Avg G',               b: 'Title Avg B'               },
+      { id: 'ul-speaker',  r: 'Upper Left Speaker Avg R',  g: 'Upper Left Speaker Avg G',  b: 'Upper Left Speaker Avg B'  },
+      { id: 'ur-speaker',  r: 'Upper Right Speaker Avg R', g: 'Upper Right Speaker Avg G', b: 'Upper Right Speaker Avg B' },
+      { id: 'l-wing',      r: 'Left Wing Avg R',           g: 'Left Wing Avg G',           b: 'Left Wing Avg B'           },
+      { id: 'ctrl-panel',  r: 'Control Panel Avg R',       g: 'Control Panel Avg G',       b: 'Control Panel Avg B'       },
+      { id: 'ic-reader',   r: 'IC Card Reader R',          g: 'IC Card Reader G',          b: 'IC Card Reader B'          },
+      { id: 'r-wing',      r: 'Right Wing Avg R',          g: 'Right Wing Avg G',          b: 'Right Wing Avg B'          },
+      { id: 'll-speaker',  r: 'Lower Left Speaker Avg R',  g: 'Lower Left Speaker Avg G',  b: 'Lower Left Speaker Avg B'  },
+      { id: 'v-unit',      r: 'V Unit Avg R',              g: 'V Unit Avg G',              b: 'V Unit Avg B'              },
+      { id: 'lr-speaker',  r: 'Lower Right Speaker Avg R', g: 'Lower Right Speaker Avg G', b: 'Lower Right Speaker Avg B' },
+      { id: 'woofer',      r: 'Woofer Avg R',              g: 'Woofer Avg G',              b: 'Woofer Avg B'              },
+    ];
+
+    let conn    = null;
+    let polling = false;
+
+    const btnConnect = document.getElementById('btn-connect');
+    const statusEl   = document.getElementById('status');
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text;
+      statusEl.className   = 'status' + (cls ? ' ' + cls : '');
+    }
+
+    function luminance(r, g, b) {
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+
+    function toHex(n) {
+      return n.toString(16).padStart(2, '0');
+    }
+
+    function applyColorToCell(cell, r, g, b) {
+      const hex = '#' + toHex(r) + toHex(g) + toHex(b);
+      const lum = luminance(r, g, b);
+      const textCol = lum > 128 ? '#111' : '#eee';
+      const label = cell.querySelector('.label');
+      const hexEl = cell.querySelector('.hex-val');
+      cell.style.backgroundColor = hex;
+      cell.style.borderColor      = lum > 8 ? 'transparent' : '#252525';
+      label.style.color   = textCol;
+      label.style.opacity = lum > 4 ? '1' : '0.35';
+      hexEl.style.color   = textCol;
+      hexEl.style.opacity = lum > 4 ? '0.85' : '0.35';
+      hexEl.textContent   = hex;
+      return hex;
+    }
+
+    function updateCell(group, lights) {
+      const r = Math.round((lights.get(group.r) || 0) * 255);
+      const g = Math.round((lights.get(group.g) || 0) * 255);
+      const b = Math.round((lights.get(group.b) || 0) * 255);
+
+      const cell = document.getElementById('cell-' + group.id);
+      const hex  = applyColorToCell(cell, r, g, b);
+
+      const svgShape = document.getElementById('svg-' + group.id);
+      if (svgShape) svgShape.setAttribute('fill', hex);
+      if (group.id === 'v-unit') {
+        document.getElementById('svg-v-unit-l').setAttribute('fill', hex);
+        document.getElementById('svg-v-unit-r').setAttribute('fill', hex);
+      }
+    }
+
+    async function poll() {
+      if (!polling || !conn) return;
+      try {
+        const lights = await conn.lightsRead();
+        lastLights = lights;
+        for (const group of LED_GROUPS) updateCell(group, lights);
+        updateNemsysView(lights);
+      } catch (e) {
+        if (polling) console.warn('poll error:', e.message);
+      }
+      if (polling) setTimeout(poll, 50);
+    }
+
+    function connect() {
+      const host     = document.getElementById('inp-host').value.trim() || 'localhost';
+      const port     = parseInt(document.getElementById('inp-port').value) || 1338;
+      const password = document.getElementById('inp-password').value;
+
+      setStatus('Connecting…', 'connecting');
+      btnConnect.textContent = 'Disconnect';
+
+      conn = new SpiceConnection(host, port, password,
+        () => {
+          setStatus('Connected', 'connected');
+          polling = true;
+          poll();
+        },
+        (hadError) => {
+          setStatus(hadError ? 'Error' : 'Disconnected', hadError ? 'error' : '');
+          polling = false;
+          conn = null;
+          btnConnect.textContent = 'Connect';
+        },
+        null
+      );
+    }
+
+    function disconnect() {
+      polling = false;
+      if (conn) { conn.close(); conn = null; }
+      setStatus('Disconnected', '');
+      btnConnect.textContent = 'Connect';
+    }
+
+    function hashSave() {
+      const host     = document.getElementById('inp-host').value.trim();
+      const port     = document.getElementById('inp-port').value.trim();
+      const password = document.getElementById('inp-password').value;
+      const p = new URLSearchParams();
+      if (host && host !== 'localhost') p.set('host', host);
+      if (port && port !== '1338')     p.set('port', port);
+      if (password)                    p.set('password', password);
+      const pins = mappingToParam(pinMapping);
+      if (pins) p.set('pins', pins);
+      const s = p.toString();
+      history.replaceState(null, '', s ? '#' + s : location.pathname + location.search);
+    }
+
+    function hashLoad() {
+      const hash = location.hash.replace(/^#/, '');
+      if (!hash) return;
+      const p = new URLSearchParams(hash);
+      if (p.has('host'))     document.getElementById('inp-host').value     = p.get('host');
+      if (p.has('port'))     document.getElementById('inp-port').value     = p.get('port');
+      if (p.has('password')) document.getElementById('inp-password').value = p.get('password');
+      if (p.has('pins')) {
+        mappingFromParam(pinMapping, p.get('pins'));
+        for (const cb of document.querySelectorAll('#pin-mapping-table input[type="checkbox"]')) {
+          cb.checked = !!pinMapping[`${cb.dataset.zone}-${cb.dataset.group}`];
+        }
+        renderConfigOutput(pinMapping, 'config-output-text');
+      }
+    }
+
+    for (const id of ['inp-host', 'inp-port', 'inp-password']) {
+      document.getElementById(id).addEventListener('input', hashSave);
+    }
+
+    btnConnect.addEventListener('click', () => {
+      if (conn) disconnect();
+      else connect();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnConnect.click();
+    });
+
+    const tooltip = document.getElementById('led-tooltip');
+    function tooltipMoveHandler(e) {
+      const label = e.target.dataset.tooltip;
+      if (!label) { tooltip.classList.remove('visible'); return; }
+      tooltip.textContent = label;
+      tooltip.classList.add('visible');
+      const x = e.clientX + 12;
+      const y = e.clientY - 28;
+      const rect = tooltip.getBoundingClientRect();
+      tooltip.style.left = Math.min(x, window.innerWidth  - rect.width  - 8) + 'px';
+      tooltip.style.top  = Math.max(y, 8) + 'px';
+    }
+    for (const svg of document.querySelectorAll('.cabinet-view svg')) {
+      svg.addEventListener('mousemove', tooltipMoveHandler);
+      svg.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+    }
+
+    const PIN_GROUPS = [
+      { id: 0, label: 'Wing Left Up',   r: 0,  g: 1,  b: 2  },
+      { id: 1, label: 'Wing Right Up',  r: 3,  g: 4,  b: 5  },
+      { id: 2, label: 'Wing Left Low',  r: 6,  g: 7,  b: 8  },
+      { id: 3, label: 'Wing Right Low', r: 9,  g: 10, b: 11 },
+      { id: 4, label: 'Woofer',         r: 12, g: 13, b: 14 },
+      { id: 5, label: 'Controller',     r: 15, g: 16, b: 17 },
+    ];
+
+    const NEMSYS_PIN_TO_SVG = {
+      0: 'svg-nemsys-wing-ul',
+      1: 'svg-nemsys-wing-ur',
+      2: 'svg-nemsys-wing-ll',
+      3: 'svg-nemsys-wing-lr',
+      4: 'svg-nemsys-woofer',
+      5: 'svg-nemsys-ctrl-panel',
+    };
+
+    const NEMSYS_PIN_TO_CELL = {
+      0: 'cell-nemsys-wing-ul',
+      1: 'cell-nemsys-wing-ur',
+      2: 'cell-nemsys-wing-ll',
+      3: 'cell-nemsys-wing-lr',
+      4: 'cell-nemsys-woofer',
+      5: 'cell-nemsys-ctrl-panel',
+    };
+
+    let lastLights = new Map();
+
+    function updateNemsysView(lights) {
+      for (const pinGroup of PIN_GROUPS) {
+        const mapped = ZONE_DEFS.filter(z => pinMapping[`${z.id}-${pinGroup.id}`]);
+        let r = 0, g = 0, b = 0;
+
+        if (mapped.length > 0) {
+          for (const zone of mapped) {
+            const lg = LED_GROUPS.find(lg => lg.id === zone.id);
+            if (!lg) continue;
+            r += (lights.get(lg.r) || 0);
+            g += (lights.get(lg.g) || 0);
+            b += (lights.get(lg.b) || 0);
+          }
+          r = Math.round(Math.min(r / mapped.length, 1) * 255);
+          g = Math.round(Math.min(g / mapped.length, 1) * 255);
+          b = Math.round(Math.min(b / mapped.length, 1) * 255);
+        }
+
+        const cell = document.getElementById(NEMSYS_PIN_TO_CELL[pinGroup.id]);
+        const hex  = cell ? applyColorToCell(cell, r, g, b) : '#' + toHex(r) + toHex(g) + toHex(b);
+
+        const svgEl = document.getElementById(NEMSYS_PIN_TO_SVG[pinGroup.id]);
+        if (svgEl) svgEl.setAttribute('fill', hex);
+      }
+    }
+
+    const ZONE_DEFS = [
+      { id: 'title',       label: 'Title',                prefix: 'title_avg'               },
+      { id: 'ul-speaker',  label: 'Upper Left Speaker',   prefix: 'upper_left_speaker_avg'  },
+      { id: 'ur-speaker',  label: 'Upper Right Speaker',  prefix: 'upper_right_speaker_avg' },
+      { id: 'l-wing',      label: 'Left Wing',            prefix: 'left_wing_avg'           },
+      { id: 'r-wing',      label: 'Right Wing',           prefix: 'right_wing_avg'          },
+      { id: 'll-speaker',  label: 'Lower Left Speaker',   prefix: 'lower_left_speaker_avg'  },
+      { id: 'lr-speaker',  label: 'Lower Right Speaker',  prefix: 'lower_right_speaker_avg' },
+      { id: 'ctrl-panel',  label: 'Control Panel',        prefix: 'control_panel_avg'       },
+      { id: 'woofer',      label: 'Woofer',               prefix: 'woofer_avg'              },
+      { id: 'v-unit',      label: 'V Unit',               prefix: 'v_unit_avg'              },
+      { id: 'ic-reader',   label: 'IC Card Reader',       prefix: 'ic_card_reader'          },
+    ];
+
+    const pinMapping = {};
+
+    function mappingToParam(mapping) {
+      let bits = 0n;
+      for (let zi = 0; zi < ZONE_DEFS.length; zi++) {
+        for (let gi = 0; gi < PIN_GROUPS.length; gi++) {
+          if (mapping[`${ZONE_DEFS[zi].id}-${PIN_GROUPS[gi].id}`]) {
+            bits |= (1n << BigInt(zi * PIN_GROUPS.length + gi));
+          }
+        }
+      }
+      return bits === 0n ? '' : bits.toString(16);
+    }
+
+    function mappingFromParam(mapping, s) {
+      if (!s) return;
+      try {
+        const bits = BigInt('0x' + s);
+        for (let zi = 0; zi < ZONE_DEFS.length; zi++) {
+          for (let gi = 0; gi < PIN_GROUPS.length; gi++) {
+            mapping[`${ZONE_DEFS[zi].id}-${PIN_GROUPS[gi].id}`] =
+              !!(bits & (1n << BigInt(zi * PIN_GROUPS.length + gi)));
+          }
+        }
+      } catch (e) { console.warn('mappingFromParam: invalid pins param', e); }
+    }
+
+    function renderConfigOutput(mapping, textareaId) {
+      const lines = [];
+
+      for (const zone of ZONE_DEFS) {
+        const selected = PIN_GROUPS.filter(g => mapping[`${zone.id}-${g.id}`]);
+
+        if (selected.length === 0) {
+          continue;
+        }
+
+        const rPins = selected.map(g => g.r).join(' ');
+        const gPins = selected.map(g => g.g).join(' ');
+        const bPins = selected.map(g => g.b).join(' ');
+
+        lines.push(`leds.${zone.prefix}_r_pin = ${rPins}`);
+        lines.push(`leds.${zone.prefix}_g_pin = ${gPins}`);
+        lines.push(`leds.${zone.prefix}_b_pin = ${bPins}`);
+        lines.push('');
+      }
+
+      document.getElementById(textareaId).value = lines.join('\n').trimEnd();
+    }
+
+    function buildTableUI(tableId, mapping, textareaId, onUpdate) {
+      const table   = document.getElementById(tableId);
+      const theadTr = table.querySelector('thead tr');
+      const tbody   = table.querySelector('tbody');
+
+      for (const group of PIN_GROUPS) {
+        const th = document.createElement('th');
+        th.textContent = group.label;
+        const range = document.createElement('span');
+        range.className = 'pin-range';
+        range.textContent = `pins ${group.r}–${group.b}`;
+        th.appendChild(range);
+        theadTr.appendChild(th);
+      }
+
+      for (const zone of ZONE_DEFS) {
+        const tr = document.createElement('tr');
+
+        const tdLabel = document.createElement('td');
+        tdLabel.className   = 'zone-label';
+        tdLabel.textContent = zone.label;
+        tr.appendChild(tdLabel);
+
+        for (const group of PIN_GROUPS) {
+          const td  = document.createElement('td');
+          const lbl = document.createElement('label');
+          const cb  = document.createElement('input');
+          cb.type          = 'checkbox';
+          cb.dataset.zone  = zone.id;
+          cb.dataset.group = group.id;
+          lbl.appendChild(cb);
+          td.appendChild(lbl);
+          tr.appendChild(td);
+        }
+
+        tbody.appendChild(tr);
+      }
+
+      table.addEventListener('change', e => {
+        if (e.target.type !== 'checkbox') {
+          return;
+        }
+
+        mapping[`${e.target.dataset.zone}-${e.target.dataset.group}`] = e.target.checked;
+        renderConfigOutput(mapping, textareaId);
+        if (onUpdate) onUpdate();
+        hashSave();
+      });
+
+      renderConfigOutput(mapping, textareaId);
+    }
+
+    function wireCopyButton(btnId, textareaId) {
+      document.getElementById(btnId).addEventListener('click', () => {
+        const text = document.getElementById(textareaId).value;
+
+        if (!text) {
+          return;
+        }
+
+        navigator.clipboard.writeText(text).then(() => {
+          const btn  = document.getElementById(btnId);
+          const orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = orig; }, 1500);
+        });
+      });
+    }
+
+    document.getElementById('btn-clear-mapping').addEventListener('click', () => {
+      for (const key of Object.keys(pinMapping)) delete pinMapping[key];
+      for (const cb of document.querySelectorAll('#pin-mapping-table input[type="checkbox"]')) {
+        cb.checked = false;
+      }
+      renderConfigOutput(pinMapping, 'config-output-text');
+      hashSave();
+    });
+
+    wireCopyButton('btn-copy-config', 'config-output-text');
+
+    buildTableUI('pin-mapping-table', pinMapping, 'config-output-text',
+      () => updateNemsysView(lastLights));
+    hashLoad();
+    if (location.hash.length > 1) connect();
+  </script>
+  </div><!-- end .page -->
+</body>
+</html>

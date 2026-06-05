@@ -37,6 +37,9 @@ enum tape_led_light {
     V_UNIT_AVG_R,
     V_UNIT_AVG_G,
     V_UNIT_AVG_B,
+    IC_CARD_READER_R,
+    IC_CARD_READER_G,
+    IC_CARD_READER_B,
 };
 
 enum pwm_light {
@@ -96,6 +99,9 @@ struct sdvxhook_config_leds {
     int v_unit_avg_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
     int v_unit_avg_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
     int v_unit_avg_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int ic_card_reader_r_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int ic_card_reader_g_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
+    int ic_card_reader_b_pin[SDVXHOOK_CONFIG_LEDS_MAX_PINS];
 };
 
 #define SDVXHOOK_CONFIG_LEDS_TITLE_AVG_R_PIN_KEY "leds.title_avg_r_pin"
@@ -128,6 +134,9 @@ struct sdvxhook_config_leds {
 #define SDVXHOOK_CONFIG_LEDS_V_UNIT_AVG_R_PIN_KEY "leds.v_unit_avg_r_pin"
 #define SDVXHOOK_CONFIG_LEDS_V_UNIT_AVG_G_PIN_KEY "leds.v_unit_avg_g_pin"
 #define SDVXHOOK_CONFIG_LEDS_V_UNIT_AVG_B_PIN_KEY "leds.v_unit_avg_b_pin"
+#define SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_R_PIN_KEY "leds.ic_card_reader_r_pin"
+#define SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_G_PIN_KEY "leds.ic_card_reader_g_pin"
+#define SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_B_PIN_KEY "leds.ic_card_reader_b_pin"
 
 #define SDVXHOOK_CONFIG_LEDS_DEFAULT_TITLE_AVG_R_PIN_VALUE (-1)
 #define SDVXHOOK_CONFIG_LEDS_DEFAULT_TITLE_AVG_G_PIN_VALUE (-1)
@@ -159,6 +168,9 @@ struct sdvxhook_config_leds {
 #define SDVXHOOK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_R_PIN_VALUE (-1)
 #define SDVXHOOK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_G_PIN_VALUE (-1)
 #define SDVXHOOK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_B_PIN_VALUE (-1)
+#define SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_R_PIN_VALUE (-1)
+#define SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_G_PIN_VALUE (-1)
+#define SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_B_PIN_VALUE (-1)
 
 struct light_config_detail {
     int tape_led_light;
@@ -324,6 +336,21 @@ static const struct light_config_detail light_config_details[] = {
      SDVXHOOK_CONFIG_LEDS_V_UNIT_AVG_B_PIN_KEY,
      SDVXHOOK_CONFIG_LEDS_DEFAULT_V_UNIT_AVG_B_PIN_VALUE,
      offsetof(struct sdvxhook_config_leds, v_unit_avg_b_pin)},
+    {IC_CARD_READER_R,
+     "IC Card Reader R",
+     SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_R_PIN_KEY,
+     SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_R_PIN_VALUE,
+     offsetof(struct sdvxhook_config_leds, ic_card_reader_r_pin)},
+    {IC_CARD_READER_G,
+     "IC Card Reader G",
+     SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_G_PIN_KEY,
+     SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_G_PIN_VALUE,
+     offsetof(struct sdvxhook_config_leds, ic_card_reader_g_pin)},
+    {IC_CARD_READER_B,
+     "IC Card Reader B",
+     SDVXHOOK_CONFIG_LEDS_IC_CARD_READER_B_PIN_KEY,
+     SDVXHOOK_CONFIG_LEDS_DEFAULT_IC_CARD_READER_B_PIN_VALUE,
+     offsetof(struct sdvxhook_config_leds, ic_card_reader_b_pin)},
 };
 
 void sdvxhook_config_leds_init(struct cconfig *config);

@@ -9,18 +9,12 @@
 #define SPICE_SDVXIO_CONFIG_ENABLE_KEYLIGHT_KEY "sdvxio.enable_keylight"
 #define SPICE_SDVXIO_CONFIG_AMP_VOLUME_KEY "sdvxio.amp_volume"
 #define SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY "sdvxio.service_coin"
-#define SPICE_SDVXIO_CONFIG_HOST_KEY "spice.host"
-#define SPICE_SDVXIO_CONFIG_PORT_KEY "spice.port"
-#define SPICE_SDVXIO_CONFIG_PASSWORD_KEY "spice.password"
 #define SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY "sdvxio.analog_enable_sleep"
 #define SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY \
     "sdvxio.analog_snap_multiplier"
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE true
 #define SPICE_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE 48
 #define SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE false
-#define SPICE_SDVXIO_CONFIG_DEFAULT_HOST_VALUE "localhost"
-#define SPICE_SDVXIO_CONFIG_DEFAULT_PORT_VALUE 1337
-#define SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE "password"
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE true
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE 0.1f
 
@@ -36,31 +30,13 @@ static void spice_sdvxio_config_init(struct cconfig *config)
         config,
         SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY,
         SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE,
-        "Send the service button instead of coin insert");
+        "Pulse the service button instead of coin mech button for coin inserts");
 
     cconfig_util_set_int(
         config,
         SPICE_SDVXIO_CONFIG_AMP_VOLUME_KEY,
         SPICE_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE,
         "SDVXIO digital amp volume (0-96) 0 is high, 96 is low.");
-
-    cconfig_util_set_str(
-        config,
-        SPICE_SDVXIO_CONFIG_HOST_KEY,
-        SPICE_SDVXIO_CONFIG_DEFAULT_HOST_VALUE,
-        "Host of spice server");
-
-    cconfig_util_set_int(
-        config,
-        SPICE_SDVXIO_CONFIG_PORT_KEY,
-        SPICE_SDVXIO_CONFIG_DEFAULT_PORT_VALUE,
-        "Port of spice server");
-
-    cconfig_util_set_str(
-        config,
-        SPICE_SDVXIO_CONFIG_PASSWORD_KEY,
-        SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE,
-        "Password of spice server");
 
     cconfig_util_set_bool(
         config,
@@ -119,44 +95,6 @@ static void spice_sdvxio_config_get(
             SPICE_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE);
     }
 
-    if (!cconfig_util_get_str(
-            config,
-            SPICE_SDVXIO_CONFIG_HOST_KEY,
-            spice_config->host,
-            sizeof(spice_config->host),
-            SPICE_SDVXIO_CONFIG_DEFAULT_HOST_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%s'",
-            SPICE_SDVXIO_CONFIG_HOST_KEY,
-            SPICE_SDVXIO_CONFIG_DEFAULT_HOST_VALUE);
-    }
-
-    if (!cconfig_util_get_int(
-            config,
-            SPICE_SDVXIO_CONFIG_PORT_KEY,
-            &spice_config->port,
-            SPICE_SDVXIO_CONFIG_DEFAULT_PORT_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
-            SPICE_SDVXIO_CONFIG_PORT_KEY,
-            SPICE_SDVXIO_CONFIG_DEFAULT_PORT_VALUE);
-    }
-
-    if (!cconfig_util_get_str(
-            config,
-            SPICE_SDVXIO_CONFIG_PASSWORD_KEY,
-            spice_config->password,
-            sizeof(spice_config->password),
-            SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%s'",
-            SPICE_SDVXIO_CONFIG_PASSWORD_KEY,
-            SPICE_SDVXIO_CONFIG_DEFAULT_PASSWORD_VALUE);
-    }
-
     if (!cconfig_util_get_bool(
             config,
             SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY,
@@ -199,7 +137,7 @@ bool get_spice_sdvxio_config(
             "spice-sdvxio.conf",
             "--help",
             "-h",
-            "spice-sdvxio",
+            "spice-sdvxio for SDVX (Spice SDK)\n",
             CCONFIG_CMD_USAGE_OUT_STDOUT)) {
         cconfig_finit(config);
         return false;

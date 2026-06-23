@@ -640,7 +640,7 @@ $(zipdir)/sdvx-hwio-x86.zip: \
 		build/bin/indep-32/sdvxio-kfca.dll \
 		build/bin/indep-32/sdvxio-bio2.dll \
 		build/bin/indep-32/vigem-sdvxio.exe \
-		build/bin/indep-32/spice-sdvxio.exe \
+		build/bin/indep-32/spice-sdvxio.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
@@ -651,7 +651,7 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 		build/bin/indep-64/sdvxio-kfca.dll \
 		build/bin/indep-64/sdvxio-bio2.dll \
 		build/bin/indep-64/vigem-sdvxio.exe \
-		build/bin/indep-64/spice-sdvxio.exe \
+		build/bin/indep-64/spice-sdvxio.dll \
 		| $(zipdir)/
 	$(V)echo ... $@
 	$(V)zip -j $@ $^

@@ -91,8 +91,7 @@ bool cconfig_main_config_init(
 
     /* Override defaults or values loaded from file with values from cmd */
     if (!cconfig_cmd_parse(config, "-p", argc, argv, false)) {
-        log_fatal("Error parsing cmd args for config values");
-        goto failure_usage;
+        log_warning("Error parsing cmd args for config values");
     }
 
     log_misc("Config state after cmd parameter overrides:");

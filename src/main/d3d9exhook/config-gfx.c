@@ -36,6 +36,11 @@
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_WIDTH_VALUE -1
 #define D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE -1
 
+#define D3D9EXHOOK_CONFIG_GFX_SUBSCREEN_FORCE_REDRAW_KEY \
+    "gfx.subscreen_force_redraw"
+
+#define D3D9EXHOOK_CONFIG_GFX_DEFAULT_SUBSCREEN_FORCE_REDRAW_VALUE false
+
 void d3d9exhook_config_gfx_init(struct cconfig *config)
 {
     cconfig_util_set_bool(
@@ -118,6 +123,14 @@ void d3d9exhook_config_gfx_init(struct cconfig *config)
         "game does not auto "
         "detect your monitor's resolution properly, e.g. 1368x768 instead of "
         "1280x720.");
+
+    cconfig_util_set_bool(
+        config,
+        D3D9EXHOOK_CONFIG_GFX_SUBSCREEN_FORCE_REDRAW_KEY,
+        D3D9EXHOOK_CONFIG_GFX_DEFAULT_SUBSCREEN_FORCE_REDRAW_VALUE,
+        "Force the subscreen to redraw every frame. Enable this if the "
+        "subscreen image becomes stuck or doesn't update (e.g. SDVX "
+        "Valkyrie mode).");
 }
 
 void d3d9exhook_config_gfx_get(
@@ -265,5 +278,17 @@ void d3d9exhook_config_gfx_get(
             "to default '%d'",
             D3D9EXHOOK_CONFIG_GFX_FORCE_SCREEN_RES_HEIGHT_KEY,
             D3D9EXHOOK_CONFIG_GFX_DEFAULT_FORCE_SCREEN_RES_HEIGHT_VALUE);
+    }
+
+    if (!cconfig_util_get_bool(
+            config,
+            D3D9EXHOOK_CONFIG_GFX_SUBSCREEN_FORCE_REDRAW_KEY,
+            &config_gfx->subscreen_force_redraw,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_SUBSCREEN_FORCE_REDRAW_VALUE)) {
+        log_warning(
+            "Invalid value for key '%s' specified, fallback "
+            "to default '%d'",
+            D3D9EXHOOK_CONFIG_GFX_SUBSCREEN_FORCE_REDRAW_KEY,
+            D3D9EXHOOK_CONFIG_GFX_DEFAULT_SUBSCREEN_FORCE_REDRAW_VALUE);
     }
 }

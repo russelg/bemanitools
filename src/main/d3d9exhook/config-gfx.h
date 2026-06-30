@@ -25,6 +25,8 @@ struct d3d9exhook_config_gfx {
         int32_t width;
         int32_t height;
     } force_screen_res;
+
+    bool subscreen_force_redraw;
 };
 
 /**

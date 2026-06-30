@@ -60,6 +60,21 @@
             # GCC 15+ uses MCF threads; expose libmcfgthread to both cross-linkers
             export NIX_LDFLAGS_i686_w64_mingw32="-L${mcfgthreads32}/lib -lmcfgthread"
             export NIX_LDFLAGS_x86_64_w64_mingw32="-L${mcfgthreads64}/lib -lmcfgthread"
+
+            # clangd wrapper: passes --query-driver so clangd runs the actual
+            # mingw-w64 cross-compiler to discover Windows system include paths
+            # (resolves missing windows.h and other Win32 headers in LSP).
+            # Placed in .direnv/bin which direnv prepends to PATH, so any editor
+            # inheriting this environment picks it up automatically.
+            mkdir -p .direnv/bin
+            cat > .direnv/bin/clangd << 'EOF'
+#!/bin/sh
+exec ${pkgs.clang-tools}/bin/clangd \
+  --query-driver="${mingwW64}/bin/*,${mingw32}/bin/*" \
+  "$@"
+EOF
+            chmod +x .direnv/bin/clangd
+            export PATH="$PWD/.direnv/bin:$PATH"
           '';
         };
       });

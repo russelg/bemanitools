@@ -57,6 +57,13 @@ my_GetAdapterModeCount(IDirect3D9Ex *self, UINT Adapter, D3DFORMAT Format);
 
 static HRESULT STDCALL my_Direct3DCreate9Ex(UINT sdk_ver, IDirect3D9Ex **api);
 
+static HRESULT STDCALL my_DevicePresent(
+    IDirect3DDevice9 *self,
+    CONST RECT *pSourceRect,
+    CONST RECT *pDestRect,
+    HWND hDestWindowOverride,
+    CONST RGNDATA *pDirtyRegion);
+
 static WNDPROC real_WndProc;
 
 static BOOL STDCALL my_EnumDisplayDevicesA(
@@ -91,6 +98,13 @@ static BOOL(STDCALL *real_EnumDisplayDevicesA)(
 static BOOL(STDCALL *real_MoveWindow)(
     HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
 
+static HRESULT(STDCALL *real_DevicePresent)(
+    IDirect3DDevice9 *self,
+    CONST RECT *pSourceRect,
+    CONST RECT *pDestRect,
+    HWND hDestWindowOverride,
+    CONST RGNDATA *pDirtyRegion);
+
 /* ------------------------------------------------------------------------- */
 
 static bool d3d9ex_windowed;
@@ -105,6 +119,10 @@ static int32_t d3d9ex_device_adapter = -1;
 static int32_t d3d9ex_force_orientation = -1;
 static int32_t d3d9ex_force_screen_res_width = -1;
 static int32_t d3d9ex_force_screen_res_height = -1;
+
+static bool d3d9ex_subscreen_force_redraw;
+static IDirect3DSwapChain9 *d3d9ex_sub_swap_chain;
+static bool d3d9ex_sub_swap_chain_attempted;
 
 static bool check_d3d9ex_force_enum()
 {
@@ -428,6 +446,26 @@ static HRESULT STDCALL my_CreateDeviceEx(
     hr = IDirect3D9Ex_CreateDeviceEx(
         real, adapter, type, hwnd, flags, pp, fdm, pdev);
 
+    if (SUCCEEDED(hr)) {
+        IDirect3DDevice9Ex *dev_ex = *pdev;
+        struct com_proxy *dev_proxy;
+        IDirect3DDevice9Vtbl *dev_vtbl;
+
+        HRESULT wrap_hr = com_proxy_wrap(
+            &dev_proxy, dev_ex, sizeof(*dev_ex->lpVtbl));
+
+        if (wrap_hr == S_OK) {
+            dev_vtbl = dev_proxy->vptr;
+
+            real_DevicePresent = dev_vtbl->Present;
+            dev_vtbl->Present = my_DevicePresent;
+
+            *pdev = (IDirect3DDevice9Ex *) dev_proxy;
+        } else {
+            log_warning("Wrapping device com proxy failed: %08lx", wrap_hr);
+        }
+    }
+
     if (SUCCEEDED(hr) && d3d9ex_confined) {
         real_WndProc = (void *) GetWindowLongPtr(hwnd, GWLP_WNDPROC);
 
@@ -523,8 +561,43 @@ static BOOL STDCALL my_EnumDisplayDevicesA(
     return ok;
 }
 
+static HRESULT STDCALL my_DevicePresent(
+    IDirect3DDevice9 *self,
+    CONST RECT *pSourceRect,
+    CONST RECT *pDestRect,
+    HWND hDestWindowOverride,
+    CONST RGNDATA *pDirtyRegion)
+{
+    HRESULT hr;
+
+    if (!d3d9ex_sub_swap_chain_attempted) {
+        d3d9ex_sub_swap_chain_attempted = true;
+
+        HRESULT gsc_hr = IDirect3DDevice9_GetSwapChain(self, 1, &d3d9ex_sub_swap_chain);
+
+        if (SUCCEEDED(gsc_hr)) {
+            log_info("Acquired sub swap chain for force-redraw");
+        } else {
+            log_misc("No sub swap chain (index 1), hr=%08lx", gsc_hr);
+        }
+    }
+
+    if (d3d9ex_subscreen_force_redraw && d3d9ex_sub_swap_chain != NULL) {
+        IDirect3DSwapChain9_Present(
+            d3d9ex_sub_swap_chain, NULL, NULL, NULL, NULL, 0);
+    }
+
+    hr = real_DevicePresent(
+        self, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+
+    return hr;
+}
+
 void d3d9ex_hook_init(void)
 {
+    d3d9ex_sub_swap_chain = NULL;
+    d3d9ex_sub_swap_chain_attempted = false;
+
     hook_table_apply(
         NULL, "d3d9.dll", d3d9ex_hook_syms, lengthof(d3d9ex_hook_syms));
 
@@ -553,6 +626,8 @@ void d3d9ex_configure(struct d3d9exhook_config_gfx *gfx_config)
 
     d3d9ex_force_screen_res_width = gfx_config->force_screen_res.width;
     d3d9ex_force_screen_res_height = gfx_config->force_screen_res.height;
+
+    d3d9ex_subscreen_force_redraw = gfx_config->subscreen_force_redraw;
 
     if (d3d9ex_force_screen_res_width * d3d9ex_force_screen_res_height > 0) {
         log_warning(

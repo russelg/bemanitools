@@ -62,10 +62,12 @@ struct config_light_map {
     size_t config_leds_offset;
 };
 
-/* CoinMech is handled solely by handle_coins to avoid override conflicts. */
+/* CoinMech is read from GPIO; handle_coins only remaps coin pulses to
+ * Service when service_coin is enabled. */
 static const struct button_map g_button_maps[] = {
     {SDVX_Button_Test,      GPIO_TYPE_SYS, SDVX_IO_IN_GPIO_SYS_TEST},
     {SDVX_Button_Service,   GPIO_TYPE_SYS, SDVX_IO_IN_GPIO_SYS_SERVICE},
+    {SDVX_Button_CoinMech,  GPIO_TYPE_SYS, SDVX_IO_IN_GPIO_SYS_COIN},
     {SDVX_Button_BT_A,      GPIO_TYPE_0,   SDVX_IO_IN_GPIO_0_A},
     {SDVX_Button_BT_B,      GPIO_TYPE_0,   SDVX_IO_IN_GPIO_0_B},
     {SDVX_Button_BT_C,      GPIO_TYPE_0,   SDVX_IO_IN_GPIO_0_C},
@@ -371,9 +373,8 @@ static void handle_lights(uint16_t *gpio_lights)
 }
 
 static uint64_t g_coin_button_release_at;
-static uint32_t g_coin_button_id;
 
-static void handle_coins(void)
+static void handle_coins(uint8_t *sys)
 {
     static bool initialized = false;
 
@@ -382,22 +383,29 @@ static void handle_coins(void)
         log_info("unlocking coin mech");
 
         sdvx_io_set_coin_blocker(false);
-        g_coin_button_id = g_config.service_coin ? SDVX_Button_Service
-                                                  : SDVX_Button_CoinMech;
+    }
+
+    if (!g_config.service_coin) {
+        return;
     }
 
     static int coinstock_last = 0;
+
+    *sys &= ~(1 << SDVX_IO_IN_GPIO_SYS_COIN);
+
     int coinstock = sdvx_io_get_coins();
 
     if (coinstock != coinstock_last) {
         coinstock_last = coinstock;
-        log_info("coins %d, pulsing button %u", coinstock, g_coin_button_id);
+        log_info("coins %d, pulsing service button", coinstock);
         g_coin_button_release_at = GetTickCount64() + 150;
     }
 
     bool pulse = GetTickCount64() < g_coin_button_release_at;
 
-    spice.set_button(g_coin_button_id, pulse, pulse ? 1.0f : 0.0f);
+    if (pulse) {
+        *sys |= 1 << SDVX_IO_IN_GPIO_SYS_SERVICE;
+    }
 }
 
 static unsigned __stdcall worker_thread(void *arg)
@@ -411,7 +419,7 @@ static unsigned __stdcall worker_thread(void *arg)
         uint16_t gpio0 = sdvx_io_get_input_gpio(0);
         uint16_t gpio1 = sdvx_io_get_input_gpio(1);
 
-        handle_coins();
+        handle_coins(&sys);
         handle_buttons(sys, gpio0, gpio1);
         handle_analogs();
 

@@ -8,13 +8,11 @@
 
 #define SPICE_SDVXIO_CONFIG_ENABLE_KEYLIGHT_KEY "sdvxio.enable_keylight"
 #define SPICE_SDVXIO_CONFIG_AMP_VOLUME_KEY "sdvxio.amp_volume"
-#define SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY "sdvxio.service_coin"
 #define SPICE_SDVXIO_CONFIG_ANALOG_ENABLE_SLEEP_KEY "sdvxio.analog_enable_sleep"
 #define SPICE_SDVXIO_CONFIG_ANALOG_SNAP_MULTIPLIER_KEY \
     "sdvxio.analog_snap_multiplier"
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE true
 #define SPICE_SDVXIO_CONFIG_DEFAULT_AMP_VOLUME_VALUE 48
-#define SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE false
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_ENABLE_SLEEP_VALUE true
 #define SPICE_SDVXIO_CONFIG_DEFAULT_ANALOG_SNAP_MULTIPLIER_VALUE 0.1f
 
@@ -25,12 +23,6 @@ static void spice_sdvxio_config_init(struct cconfig *config)
         SPICE_SDVXIO_CONFIG_ENABLE_KEYLIGHT_KEY,
         SPICE_SDVXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE,
         "Enable input based key lighting");
-
-    cconfig_util_set_bool(
-        config,
-        SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY,
-        SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE,
-        "Pulse the service button instead of inserting coins into spice");
 
     cconfig_util_set_int(
         config,
@@ -69,18 +61,6 @@ static void spice_sdvxio_config_get(
             "to default '%d'",
             SPICE_SDVXIO_CONFIG_ENABLE_KEYLIGHT_KEY,
             SPICE_SDVXIO_CONFIG_DEFAULT_ENABLE_KEYLIGHT_VALUE);
-    }
-
-    if (!cconfig_util_get_bool(
-            config,
-            SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY,
-            &spice_config->service_coin,
-            SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE)) {
-        log_warning(
-            "Invalid value for key '%s' specified, fallback "
-            "to default '%d'",
-            SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY,
-            SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE);
     }
 
     if (!cconfig_util_get_int(

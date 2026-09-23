@@ -9,7 +9,6 @@
 
 struct spice_sdvxio_config {
     bool enable_keylight;
-    bool service_coin;
     int32_t amp_volume;
     bool analog_enable_sleep;
     float analog_snap_multiplier;

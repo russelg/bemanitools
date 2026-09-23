@@ -341,7 +341,11 @@ static void my_ControlCoinBlocker(void *this, uint64_t index, uint8_t state)
 }
 static void my_AddCounter(void *this, int side_0, char count)
 {
-    // nothing
+    /* For a BIO2, the IO board counts the coins on its own coin input and
+       drives the cabinet's physical coin counter from that, see the
+       c_counter field of bi2a_sdvx_state_out and
+       doc/dev/bio2-bi2a-sdvx-protocol.md. Nothing to forward to sdvxio-bio2
+       for this. */
 }
 static void my_SetIccrLed(void *this, uint32_t color)
 {

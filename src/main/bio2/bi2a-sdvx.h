@@ -45,7 +45,15 @@ struct bi2a_sdvx_state_in {
 };
 
 struct bi2a_sdvx_state_out {
-    uint8_t unk1[2];
+    /* Coin counter. The IO board pulses the physical (mechanical) cabinet
+       coin counter for every increment of this 6-bit wrapping value. The
+       original libacio implementation accumulates the coin count it reads
+       from the board (see the coins field of bi2a_sdvx_state_in) in here. */
+    uint8_t c_counter;
+    uint8_t unk1;
+    /* Coin blocker state, two bits (0x80: coin slot 1, 0x40: coin slot 2).
+       I.e. the bits are set while coins of the respective slot are accepted
+       and cleared while the coin mech of that slot is blocked. */
     uint8_t c_block;
     uint8_t woof_r;
     uint8_t woof_g;

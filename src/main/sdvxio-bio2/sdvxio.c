@@ -33,6 +33,13 @@ static uint16_t sdvx_io_analog[2];
 static bool coin_blocked;
 static uint8_t sdvx_io_coins;
 
+/* State of the coin counter that is sent to the IO board with every poll and
+   which drives the physical cabinet coin counter. See update_coin_counter. */
+
+static bool coin_counter_valid;
+static uint8_t coin_counter;
+static uint8_t coin_counter_last;
+
 static char autodetect_buffer[512];
 
 static atomic_bool running;
@@ -242,6 +249,11 @@ void sdvx_io_set_pwm_light(uint8_t light_no, uint8_t intensity)
 bool sdvx_io_write_output(void)
 {
     memcpy(&pout_ready, &pout_staging, sizeof(struct bi2a_sdvx_state_out));
+
+    /* The IO board pulses the physical cabinet coin counter for every
+       increment of this value */
+    pout_ready.c_counter = coin_counter & 0x3F;
+
     pout_ready.wingUpper[0] = wing_staging[0] / 2 + wing_staging[3] / 2;
     pout_ready.wingUpper[1] = wing_staging[1] / 2 + wing_staging[4] / 2;
     pout_ready.wingUpper[2] = wing_staging[2] / 2 + wing_staging[5] / 2;
@@ -264,6 +276,35 @@ static uint8_t shift_pin(uint16_t value, uint8_t pin)
     }
 
     return 0;
+}
+
+/* The IO board reports how many coins it detected as a 6-bit wrapping
+   counter (see the coins field of bi2a_sdvx_state_in). The board expects to
+   receive a 6-bit counter of the coins that were accepted in return, which it
+   uses to pulse the physical cabinet coin counter (see the c_counter field of
+   bi2a_sdvx_state_out). Konami's libacio accumulates the coins it reads from
+   the board and sends the result of that accumulation back. Do the same
+   here. */
+
+static void update_coin_counter(uint8_t coins)
+{
+    coins &= 0x3F;
+
+    if (coin_counter_valid) {
+        uint8_t coins_added = (coins - coin_counter_last) & 0x3F;
+
+        if (coins_added > 0) {
+            coin_counter += coins_added;
+
+            log_info(
+                "Coin counter: %d coin(s) added, total %d",
+                coins_added,
+                coin_counter & 0x3F);
+        }
+    }
+
+    coin_counter_last = coins;
+    coin_counter_valid = true;
 }
 
 bool _bio2_sdvx_io_poll(
@@ -299,6 +340,8 @@ bool sdvx_io_read_input(void)
     sdvx_io_analog[1] = pin.analogs[1].a_val;
 
     sdvx_io_coins = pin.coins;
+
+    update_coin_counter(pin.coins);
 
     sdvx_io_gpio_sys = 0;
     sdvx_io_gpio_sys |=

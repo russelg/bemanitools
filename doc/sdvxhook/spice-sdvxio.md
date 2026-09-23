@@ -115,9 +115,12 @@ leds.ic_card_reader_b_pin=-1
 
 # SDK caveats
 
-- There is no coin API in the SDK. Coins are delivered by pulsing the CoinMech button (or the
-  Service button if `sdvxio.service_coin=true`). The coin blocker state is not synchronised with
-  spice (it is unlocked once at startup).
+- Coins detected on the coin mech are inserted into spice's shared coin stock using the SDK's
+  `insert_coin` API (requires spice2x with SDK v0.3 or later). The coin switch is also forwarded as
+  the CoinMech button. The coin blocker state is not synchronised with spice (it is unlocked once at
+  startup).
+- Set `sdvxio.service_coin=true` to pulse the Service button instead of inserting coins, for setups
+  that add credits by pressing service.
 
 # Notes
 

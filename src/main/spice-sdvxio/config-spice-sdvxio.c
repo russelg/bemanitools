@@ -30,7 +30,7 @@ static void spice_sdvxio_config_init(struct cconfig *config)
         config,
         SPICE_SDVXIO_CONFIG_SERVICE_COIN_KEY,
         SPICE_SDVXIO_CONFIG_DEFAULT_SERVICE_COIN_VALUE,
-        "Pulse the service button instead of coin mech button for coin inserts");
+        "Pulse the service button instead of inserting coins into spice");
 
     cconfig_util_set_int(
         config,

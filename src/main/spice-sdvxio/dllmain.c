@@ -62,8 +62,8 @@ struct config_light_map {
     size_t config_leds_offset;
 };
 
-/* CoinMech is read from GPIO; handle_coins only remaps coin pulses to
- * Service when service_coin is enabled. */
+/* The coin switch is forwarded as-is; handle_coins credits coins to spice via
+ * the SDK, or remaps coin pulses to Service when service_coin is enabled. */
 static const struct button_map g_button_maps[] = {
     {SDVX_Button_Test,      GPIO_TYPE_SYS, SDVX_IO_IN_GPIO_SYS_TEST},
     {SDVX_Button_Service,   GPIO_TYPE_SYS, SDVX_IO_IN_GPIO_SYS_SERVICE},
@@ -374,36 +374,68 @@ static void handle_lights(uint16_t *gpio_lights)
 
 static uint64_t g_coin_button_release_at;
 
+static void insert_coins(int amount)
+{
+    if (spice.insert_coin == NULL) {
+        static bool warned = false;
+
+        if (!warned) {
+            warned = true;
+            log_warning(
+                "insert_coin missing; update spice2x to credit coins");
+        }
+
+        return;
+    }
+
+    log_info("inserting %d coin(s)", amount);
+
+    SPICE_SDK_STATUS_CODE result = spice.insert_coin((uint8_t) amount);
+
+    if (result != SPICE_SDK_STATUS_SUCCESS) {
+        static bool warned = false;
+
+        if (!warned) {
+            warned = true;
+            log_warning(
+                "insert_coin failed (status %d); further failures suppressed",
+                result);
+        }
+    }
+}
+
 static void handle_coins(uint8_t *sys)
 {
     static bool initialized = false;
+    static int coins_last;
+
+    int coins = sdvx_io_get_coins();
 
     if (!initialized) {
         initialized = true;
+        coins_last = coins;
         log_info("unlocking coin mech");
 
         sdvx_io_set_coin_blocker(false);
+    } else if (coins > coins_last) {
+        if (g_config.service_coin) {
+            log_info("coins %d, pulsing service button", coins - coins_last);
+            g_coin_button_release_at = GetTickCount64() + 150;
+        } else {
+            insert_coins(coins - coins_last);
+        }
     }
+
+    coins_last = coins;
 
     if (!g_config.service_coin) {
         return;
     }
 
-    static int coinstock_last = 0;
-
+    /* Remap coin pulses to the service button, hiding the coin switch. */
     *sys &= ~(1 << SDVX_IO_IN_GPIO_SYS_COIN);
 
-    int coinstock = sdvx_io_get_coins();
-
-    if (coinstock != coinstock_last) {
-        coinstock_last = coinstock;
-        log_info("coins %d, pulsing service button", coinstock);
-        g_coin_button_release_at = GetTickCount64() + 150;
-    }
-
-    bool pulse = GetTickCount64() < g_coin_button_release_at;
-
-    if (pulse) {
+    if (GetTickCount64() < g_coin_button_release_at) {
         *sys |= 1 << SDVX_IO_IN_GPIO_SYS_SERVICE;
     }
 }

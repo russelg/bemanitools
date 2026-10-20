@@ -22,3 +22,17 @@ or that the application otherwise uses sdvxio.dll
   default
 - Please connect any additional acio devices to their own port (ex: SDVX5 expects an ICCA by itself
   on COM2)
+
+# Coin counter
+
+The BIO2 pulses the cabinet's physical (mechanical) coin counter based on the coin counter value
+that is part of every poll request. Just like the original libacio implementation, `sdvxio-bio2`
+accumulates the coins the board reported into a 6 bit counter and sends that value back to the
+board, so the physical counter advances for every coin the board accepted. See
+`doc/dev/bio2-bi2a-sdvx-protocol.md` for details on the protocol.
+
+The value is also logged, so you can check whether coins are detected at all:
+
+```
+I:sdvxio-bio2: Coin counter: 1 coin(s) added, total 1
+```

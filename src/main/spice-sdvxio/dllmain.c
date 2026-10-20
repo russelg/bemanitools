@@ -412,14 +412,60 @@ static void handle_coins(void)
     if (!initialized) {
         initialized = true;
         coins_last = coins;
-        log_info("unlocking coin mech");
-
-        sdvx_io_set_coin_blocker(false);
     } else if (coins > coins_last) {
         insert_coins(coins - coins_last);
     }
 
     coins_last = coins;
+}
+
+/* The coin blocker state is owned by spice/the game, which blocks and
+   unblocks the coin mech through the BIO2/BI2X APIs. Follow that state so the
+   cabinet returns or accepts coins the same way a real machine would. */
+
+static void handle_coin_blocker(void)
+{
+    static bool initialized = false;
+    static bool blocked_last;
+
+    if (spice.get_coin_blocker == NULL) {
+        static bool warned = false;
+
+        if (!warned) {
+            warned = true;
+
+            log_warning(
+                "coin blocker sync missing; update spice2x to SDK v0.6 or "
+                "later");
+        }
+
+        /* Fall back to unlocking the coin mech once at startup */
+        if (!initialized) {
+            initialized = true;
+            log_info("unlocking coin mech");
+
+            sdvx_io_set_coin_blocker(false);
+        }
+
+        return;
+    }
+
+    bool blocked = false;
+
+    if (spice.get_coin_blocker(&blocked) != SPICE_SDK_STATUS_SUCCESS) {
+        return;
+    }
+
+    if (!initialized || blocked != blocked_last) {
+        initialized = true;
+        blocked_last = blocked;
+
+        log_info(
+            "coin blocker %s",
+            blocked ? "closed, returning coins" : "open, accepting coins");
+
+        sdvx_io_set_coin_blocker(blocked);
+    }
 }
 
 static unsigned __stdcall worker_thread(void *arg)
@@ -433,6 +479,7 @@ static unsigned __stdcall worker_thread(void *arg)
         uint16_t gpio0 = sdvx_io_get_input_gpio(0);
         uint16_t gpio1 = sdvx_io_get_input_gpio(1);
 
+        handle_coin_blocker();
         handle_coins();
         handle_buttons(sys, gpio0, gpio1);
         handle_analogs();

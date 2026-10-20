@@ -117,10 +117,10 @@ leds.ic_card_reader_b_pin=-1
 
 - Coins detected on the coin mech are inserted into spice's shared coin stock using the SDK's
   `insert_coin` API (requires spice2x with SDK v0.3 or later). The coin switch is also forwarded as
-  the CoinMech button. The coin blocker state is not synchronised with spice (it is unlocked once at
-  startup).
-- Set `sdvxio.service_coin=true` to pulse the Service button instead of inserting coins, for setups
-  that add credits by pressing service.
+  the CoinMech button.
+- The cabinet's coin blocker follows the state spice2x/the game reports through the SDK's
+  `get_coin_blocker` (requires spice2x with SDK v0.6 or later). Without that call the coin mech is
+  unlocked once at startup, as before.
 
 # Notes
 

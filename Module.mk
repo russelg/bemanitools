@@ -222,6 +222,21 @@ include src/test/util/Module.mk
 
 zipdir          := $(BUILDDIR)/zip
 
+spice_sdvxio_x64_files := \
+		build/bin/indep-64/sdvxio-bio2.dll \
+		build/bin/indep-64/spice-sdvxio.dll \
+
+sdvxhook2_valk_x64_files := \
+		build/bin/avs2_1700-64/launcher.exe \
+		build/bin/avs2_1700-64/sdvxhook2-valk.dll \
+		build/bin/indep-64/aciomgr.dll \
+		build/bin/indep-64/eamio-icca.dll \
+		build/bin/indep-64/sdvxio-bio2.dll \
+		dist/sdvx5/sdvxhook2-valk.conf \
+
+sdvx_valk_x64_files := \
+		$(sort $(spice_sdvxio_x64_files) $(sdvxhook2_valk_x64_files))
+
 $(zipdir)/:
 	$(V)mkdir -p $@
 
@@ -656,6 +671,24 @@ $(zipdir)/sdvx-hwio-x64.zip: \
 	$(V)echo ... $@
 	$(V)zip -j $@ $^
 
+$(zipdir)/spice-sdvxio-x64.zip: \
+		$(spice_sdvxio_x64_files) \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/sdvxhook2-valk-x64.zip: \
+		$(sdvxhook2_valk_x64_files) \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
+$(zipdir)/sdvx-valk-x64.zip: \
+		$(sdvx_valk_x64_files) \
+		| $(zipdir)/
+	$(V)echo ... $@
+	$(V)zip -j $@ $^
+
 $(zipdir)/ddr-11.zip: \
 		build/bin/indep-32/inject.exe \
 		build/bin/avs2_803-32/ddrhook1.dll \
@@ -892,6 +925,9 @@ $(BUILDDIR)/bemanitools.zip: \
 		$(zipdir)/sdvx-05-cn.zip \
 		$(zipdir)/sdvx-hwio-x86.zip \
 		$(zipdir)/sdvx-hwio-x64.zip \
+		$(zipdir)/spice-sdvxio-x64.zip \
+		$(zipdir)/sdvxhook2-valk-x64.zip \
+		$(zipdir)/sdvx-valk-x64.zip \
 		$(zipdir)/tools.zip \
 		$(zipdir)/tools-x64.zip \
 		CHANGELOG.md \

@@ -5,11 +5,23 @@ patches.
 The main use case is using sdvxio-bio2 to get Valkyrie-mode support including LED support. The setup
 instructions below are for this use case.
 
+# Compatibility
+
+The `sdvxio-bio2.dll` in this fork is not compatible with default Bemanitools 5, and the default
+Bemanitools 5 `sdvxio.dll` does not work with this fork. This fork's hooks use additional `sdvxio`
+API functions that are not provided by the default backend.
+
+Keep `spice-sdvxio.dll` and `sdvxio-bio2.dll` from the same fork build. Do not mix either of them
+with binaries from default Bemanitools 5.
+
 Tested against spice2x **2025-06-10** (or later). If `init()` fails or required SDK functions are
 absent, the DLL refuses to load and logs the reason — update spice2x if this happens.
 
 # Setup
 
+- Use `spice-sdvxio-x64.zip` from the release, or build it directly with
+  `make build/zip/spice-sdvxio-x64.zip`
+  - The archive contains `spice-sdvxio.dll` and the `sdvxio-bio2.dll` backend
 - Make sure that your BIO2 is flashed with a SDVX firmware (if you can boot SDVX5 with it, it's
   already the right firmware)
   - The firmware persists between boots, so as long as it's flashed to the correct firmware, you no

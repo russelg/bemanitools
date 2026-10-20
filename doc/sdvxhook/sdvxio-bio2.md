@@ -1,6 +1,16 @@
 This library talks to a BIO2 BI2A node and implements the sdvxio API of BT5. Thus, it allows you to
 use a BIO2 SDVX device board with *any* version of SDVX that is supported by BT5.
 
+# Compatibility
+
+The `sdvxio-bio2.dll` in this fork is not compatible with default Bemanitools 5. This fork extends
+the `sdvxio` API with functions including `sdvx_io_get_coins` and
+`sdvx_io_set_coin_blocker`, and the hooks in this fork depend on them.
+
+The reverse is also true: a `sdvxio.dll` or `sdvxio-bio2.dll` from default Bemanitools 5 does not
+work with this fork's `spice-sdvxio.dll` or `sdvxhook2-valk.dll`. Use binaries from this fork
+together rather than mixing them with another Bemanitools 5 build.
+
 # Setup
 
 - Make sure that your BIO2 is flashed with a SDVX firmware (if you can boot SDVX5 with it, it's

@@ -5,19 +5,28 @@ This library hooks the BI2X API used by SDVX Valkyrie mode.
 The main use case of this is to use `sdvxio-bio2` to get valkyrie-mode support on a Nemsys, including LED support.
 The setup instructions below will be for this use case.
 
+# Compatibility
+
+The `sdvxio-bio2.dll` in this fork is not compatible with default Bemanitools 5, and the default
+Bemanitools 5 `sdvxio.dll` does not work with this fork. This fork's hooks use additional `sdvxio`
+API functions that are not provided by the default backend.
+
+Keep `sdvxhook2-valk.dll` and `sdvxio-bio2.dll` from the same fork build. Do not mix either of them
+with binaries from default Bemanitools 5.
+
 # Setup
 
-You'll need the following files:
+Use `sdvxhook2-valk-x64.zip` from the release, or build it directly with
+`make build/zip/sdvxhook2-valk-x64.zip`. The archive contains the files needed for the typical BIO2
+setup:
 
-- `sdvx-hwio-x64.zip`
-  - `sdvxio-bio2.dll` 
-    - or `sdvxio-kfca.dll` if you want to use a KFCA board (SDVX 1-4)
-  - `aciomgr.dll`
-  - `eamio-icca.dll` (If you want IC card reader support) 
-- `sdvx-05-to-06.zip`
-  - `sdvxhook2-valk.dll`
-  - `sdvxhook2-valk.conf`
-  - `launcher.exe`
+- `sdvxio-bio2.dll`
+- `aciomgr.dll`
+- `eamio-icca.dll` (If you want IC card reader support)
+- `sdvxhook2-valk.dll`
+- `sdvxhook2-valk.conf`
+- `launcher.exe`
+
 
 ## Instructions  
 

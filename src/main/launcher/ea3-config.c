@@ -18,7 +18,15 @@ PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, model, "/ea3/soft/model")
 PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, dest, "/ea3/soft/dest")
 PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, spec, "/ea3/soft/spec")
 PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, rev, "/ea3/soft/rev")
-PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, ext, "/ea3/soft/ext")
+PSMAP_OPTIONAL(PSMAP_TYPE_STR, struct ea3_ident, ext, "/ea3/soft/ext", "")
+PSMAP_END
+
+/* The bootstrap config of the installed game provides the release code that
+   ends up in the "ext" field of the sidcode. It replaces the release code from
+   the ea3 config if present */
+
+PSMAP_BEGIN(ea3_ident_bootstrap_psmap)
+PSMAP_REQUIRED(PSMAP_TYPE_STR, struct ea3_ident, ext, "/config/release_code")
 PSMAP_END
 
 void ea3_ident_init(struct ea3_ident *ident)
@@ -30,6 +38,40 @@ bool ea3_ident_from_property(
     struct ea3_ident *ident, struct property *ea3_config)
 {
     return property_psmap_import(ea3_config, NULL, ident, ea3_ident_psmap);
+}
+
+bool ea3_ident_ext_from_bootstrap(
+    struct ea3_ident *ident, struct property *bootstrap_config)
+{
+    struct ea3_ident release;
+    struct property_node *node;
+
+    node = property_search(bootstrap_config, NULL, "/config/release_code");
+
+    if (node == NULL) {
+        return false;
+    }
+
+    ea3_ident_init(&release);
+
+    if (!property_psmap_import(
+            bootstrap_config, NULL, &release, ea3_ident_bootstrap_psmap)) {
+        log_warning(
+            "bootstrap config: Unable to read release code, keeping release "
+            "code from ea3 config");
+
+        return false;
+    }
+
+    if (release.ext[0] == '\0') {
+        return false;
+    }
+
+    str_cpy(ident->ext, lengthof(ident->ext), release.ext);
+
+    log_info("Using release code %s from bootstrap config", ident->ext);
+
+    return true;
 }
 
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident)

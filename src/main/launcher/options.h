@@ -11,6 +11,7 @@ struct options {
     size_t avs_heap_size;
     const char *app_config_path;
     const char *avs_config_path;
+    const char *bootstrap_config_path;
     const char *ea3_config_path;
     const char *softid;
     const char *pcbid;

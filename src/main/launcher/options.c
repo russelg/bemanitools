@@ -18,6 +18,7 @@ void options_init(struct options *options)
     options->avs_heap_size = DEFAULT_HEAP_SIZE;
     options->app_config_path = "prop/app-config.xml";
     options->avs_config_path = "prop/avs-config.xml";
+    options->bootstrap_config_path = "prop/bootstrap.xml";
     options->ea3_config_path = "prop/ea3-config.xml";
     options->softid = NULL;
     options->pcbid = NULL;
@@ -62,6 +63,15 @@ bool options_read_cmdline(struct options *options, int argc, const char **argv)
                     }
 
                     options->avs_config_path = argv[++i];
+
+                    break;
+
+                case 'Z':
+                    if (i + 1 >= argc) {
+                        return false;
+                    }
+
+                    options->bootstrap_config_path = argv[++i];
 
                     break;
 
@@ -221,6 +231,8 @@ void options_print_usage(void)
         "prop/avs-config.xml)\n"
         "       -E [filename]   ea3 configuration file (default: "
         "prop/ea3-config.xml)\n"
+        "       -Z [filename]   Bootstrap configuration file (default: "
+        "prop/bootstrap.xml)\n"
         "       -H [bytes]      AVS heap size (default: 16777216)\n"
 #ifdef AVS_HAS_STD_HEAP
         "       -T [bytes]      'std' heap size (default 16777216)\n"

@@ -133,6 +133,7 @@ int main(int argc, const char **argv)
 
     struct property *app_config;
     struct property *avs_config;
+    struct property *bootstrap_config;
     struct property *ea3_config;
 
     struct property_node *app_config_root;
@@ -248,6 +249,29 @@ int main(int argc, const char **argv)
     if (!ea3_ident_from_property(&ea3, ea3_config)) {
         log_fatal(
             "%s: Error reading IDs from config file", options.ea3_config_path);
+    }
+
+    /* The bootstrap config of the installed game, if present, provides the
+       release code that the game expects in its sidcode. It takes precedence
+       over the release code from the ea3 config */
+
+    if (path_exists(options.bootstrap_config_path)) {
+        bootstrap_config = boot_property_load(options.bootstrap_config_path);
+        ea3_ident_ext_from_bootstrap(&ea3, bootstrap_config);
+        boot_property_free(bootstrap_config);
+    } else {
+        log_misc(
+            "%s: bootstrap config file missing, using release code from %s",
+            options.bootstrap_config_path,
+            options.ea3_config_path);
+    }
+
+    if (ea3.ext[0] == '\0') {
+        log_fatal(
+            "No release code found in %s or %s. Add a release_code node to "
+            "the bootstrap config or an ext node to the ea3 config",
+            options.bootstrap_config_path,
+            options.ea3_config_path);
     }
 
     if (options.softid != NULL) {

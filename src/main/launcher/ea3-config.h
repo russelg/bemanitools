@@ -31,6 +31,19 @@ struct ea3_ident {
 void ea3_ident_init(struct ea3_ident *ident);
 bool ea3_ident_from_property(
     struct ea3_ident *ident, struct property *ea3_config);
+/**
+ * Reads the release code from the given bootstrap config and stores it in the
+ * "ext" field of the given ident.
+ *
+ * The release code of the installed game is what the arcade boot process puts
+ * into the "ext" field of the sidcode. It therefore takes precedence over the
+ * release code that is configured in the ea3 config, which might be outdated
+ * or belong to a different game version.
+ *
+ * Returns true if a release code was read from the bootstrap config.
+ */
+bool ea3_ident_ext_from_bootstrap(
+    struct ea3_ident *ident, struct property *bootstrap_config);
 void ea3_ident_hardid_from_ethernet(struct ea3_ident *ident);
 bool ea3_ident_invoke_module_init(
     struct ea3_ident *ident,

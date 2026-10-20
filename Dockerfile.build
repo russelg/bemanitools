@@ -1,4 +1,4 @@
-FROM --platform=amd64 debian:11.6-slim@sha256:f7d141c1ec6af549958a7a2543365a7829c2cdc4476308ec2e182f8a7c59b519
+FROM --platform=amd64 debian:12-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
 
 LABEL description="Build environment for bemanitools"
 
